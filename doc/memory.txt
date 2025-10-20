@@ -1,0 +1,26 @@
+
+$2000 - $23ff   ; BBC font with Atari control characters
+
+$2400 - $2fff   ; IRQ/NMI wrappers, MOS to Atari OS layer
+
+; BBC BASIC
+
+$3000 - $37f6   ; part 2
+
+$c000 - $cfee   ; part 1        <--- language entry
+
+$d800 - $fff2   ; part 3
+
+BBC BASIC ZP at $80-$cf, $fd-$ff
+
+Translation layer: $d0-...
+
+WorkSpace $3800 - $3bff
+
+LOMEM = $3c00
+
+HIMEM = $bc00
+
+32kB free for BASIC programs
+
+$6000 -         ; setup and "under ROM" loader
