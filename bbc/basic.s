@@ -222,7 +222,7 @@ START_OF_ROM:
 
 ; ----------------------------------------------------------------------------
 
-.ifdef MOS_BBC
+.ifdef TARGET_BBC
     cmp #$01          ; Language Entry
     beq ENTRY
     rts
