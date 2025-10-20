@@ -228,7 +228,9 @@ tknOSCLI    = $FF
         org $3000
         icl 'part2.s'
 
-        ini under_rom_loader
+        .if .not .def SKIP_INI_LOADER
+            ini under_rom_loader
+        .endif
 
         org $c000
         icl 'part1.s'
