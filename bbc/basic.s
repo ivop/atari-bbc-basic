@@ -9557,11 +9557,7 @@ INSTR:
     jsr PHSTR               ; push searched string on the stack
     jsr EXPR                ; evaluate next expression
 
-    .if version < 3
-        bne EVALE           ; 'Type mismatch' error if it's not a string
-    .elseif version >= 3
-        bne FACTE           ; 'Type mismatch' error if it's not a string
-    .endif
+    bne FACTE           ; 'Type mismatch' error if it's not a string
 
     lda #$01            ; set default start position to 1
     sta zpIACC
@@ -9753,16 +9749,12 @@ DATASL:
 
 QSTRF:
     dey                 ; one character less than , or CR
-    .if version < 3
-        jmp QSTRE       ; exit through end of quoted string routine
-    .elseif version >= 3
 QSTRE:
-        dex             ; one character less than , or CR
-        stx zpCLEN      ; store as string length of STRACC
-        sty zpAECUR     ; store as new AE cursor position
-        lda #$00        ; return type is a string
-        rts
-    .endif
+    dex             ; one character less than , or CR
+    stx zpCLEN      ; store as string length of STRACC
+    sty zpAECUR     ; store as new AE cursor position
+    lda #$00        ; return type is a string
+    rts
 
 ; Copy quoted string from AELINE to STRACC
 
@@ -9777,13 +9769,8 @@ QSTRL:
     cmp #$0D
     beq QSTREG          ; 'Missing "' error if it's an EOL/CR
 
-    .if version < 3
-        iny                 ; point to next source character
-        sta STRACC,X        ; store current character in string buffer
-    .elseif version >= 3
-        sta STRACC,X        ; store character in string buffer
-        iny                 ; point to next source character
-    .endif
+    sta STRACC,X        ; store character in string buffer
+    iny                 ; point to next source character
 
     inx                     ; increment destination index
     cmp #'"'
@@ -9794,17 +9781,8 @@ QSTRL:
     beq QSTRP               ; if it's another ", continue loop
                             ; note that the first " has been put in the buffer
 
-    .if version < 3
-QSTRE:
-        dex                 ; one character less than "
-        stx zpCLEN          ; store as string length of STRACC
-        sty zpAECUR         ; update AE line cursor position
-        lda #$00            ; return type is a string
-        rts
-    .elseif version >= 3
-        bne QSTRE           ; set string length and new AE cursor position,
-                            ; exit with type is string, branch always
-    .endif
+    bne QSTRE           ; set string length and new AE cursor position,
+                        ; exit with type is string, branch always
 
 QSTREG:
     jmp NSTNG           ; 'Missing "' error
@@ -9887,16 +9865,14 @@ GETPC:
 FACERR:
     brk
     dta $1A, 'No such variable'
-
+    ; brk overlap
+BKTERR:
     brk
-    .if version >= 3
-BKTERR = * -1               ; include previous BRK
-        dta $1B, 'Missing )'
+    dta $1B, 'Missing )'
 
 HEXDED:
-        brk                 ; both end of BKTERR and start of HEXDED
-        dta $1C, 'Bad HEX', 0
-    .endif
+    brk                 ; both end of BKTERR and start of HEXDED
+    dta $1C, 'Bad HEX', 0
 
 ; ----------------------------------------------------------------------------
 
@@ -9910,24 +9886,9 @@ BRA:
     tay                 ; set flags on A
     rts
 
-    .if version < 3
-BKTERR:
-        brk
-        dta $1B, 'Missing )', 0
-    .endif
-
 HEXIN:
-    .if version < 3
-        ldx #$00            ; zero IACC
-        stx zpIACC
-        stx zpIACC+1
-        stx zpIACC+2
-        stx zpIACC+3
-        ldy zpAECUR         ; load AE cursor position
-    .elseif version >= 3
-        jsr FALSE           ; set IACC to all zeros
-        iny                 ; next cursor position
-    .endif
+    jsr FALSE           ; set IACC to all zeros
+    iny                 ; next cursor position
 
 HEXIP:
     lda (zpAELINE),Y        ; get next character
@@ -9976,23 +9937,21 @@ HEXEND:
 
 ; ----------------------------------------------------------------------------
 
-    .if version >= 3
-
 ; =TOP - Return top of program
 ; ============================
 ; There is no TOP token, only TO (as in FOR), so a check for 'P' is done
 
 TO:
-        iny
-        lda (zpAELINE),Y    ; get next character
-        cmp #'P'
-        bne FACERR          ; no 'P' found, error 'No such variable'
+    iny
+    lda (zpAELINE),Y    ; get next character
+    cmp #'P'
+    bne FACERR          ; no 'P' found, error 'No such variable'
 
-        inc zpAECUR         ; increment past 'P'
-        lda zpTOP           ; load YA with value of TOP
-        ldy zpTOP+1
-        bcs AYACC           ; branch always (because of cmp)
-                            ; set IACC to value of YA, and exit
+    inc zpAECUR         ; increment past 'P'
+    lda zpTOP           ; load YA with value of TOP
+    ldy zpTOP+1
+    bcs AYACC           ; branch always (because of cmp)
+                        ; set IACC to value of YA, and exit
 
 ; ----------------------------------------------------------------------------
 
@@ -10000,12 +9959,12 @@ TO:
 ; =================
 
 RPAGE:
-        ldy zpTXTP      ; load YA with PAGE value
-        lda #$00
-        beq AYACC       ; branch always, set IACC to YA, and exit
+    ldy zpTXTP      ; load YA with PAGE value
+    lda #$00
+    beq AYACC       ; branch always, set IACC to YA, and exit
 
 LENB:
-        jmp LETM        ; error, 'Type mismatch'
+    jmp LETM        ; error, 'Type mismatch'
 
 ; ----------------------------------------------------------------------------
 
@@ -10013,28 +9972,28 @@ LENB:
 ; ============
 
 LEN:
-        jsr FACTOR      ; evaluate argument
-        bne LENB        ; 'Type mismatch' if it's not a string
+    jsr FACTOR      ; evaluate argument
+    bne LENB        ; 'Type mismatch' if it's not a string
 
-        lda zpCLEN      ; get length of string STRACC
+    lda zpCLEN      ; get length of string STRACC
 
-        ; fallthrough to return it in IACC
+    ; fallthrough to return it in IACC
 
 ; Return 8-bit integer
 ; --------------------
 SINSTK:
-        ldy #$00      ; Clear b8-b15, jump to return 16-bit int
+    ldy #$00      ; Clear b8-b15, jump to return 16-bit int
 
 ; Return 16-bit integer in YA
 ; ---------------------------
 AYACC:
-        sta zpIACC
-        sty zpIACC+1      ; Store YA in integer accumulator
-        lda #$00
-        sta zpIACC+2
-        sta zpIACC+3      ; Set b16-b31 to 0
-        lda #$40          ; type integer
-        rts
+    sta zpIACC
+    sty zpIACC+1      ; Store YA in integer accumulator
+    lda #$00
+    sta zpIACC+2
+    sta zpIACC+3      ; Set b16-b31 to 0
+    lda #$40          ; type integer
+    rts
 
 ; ----------------------------------------------------------------------------
 
@@ -10042,8 +10001,8 @@ AYACC:
 ; =====================
 
 COUNT:
-        lda zpTALLY    ; get COUNT
-        bcc SINSTK     ; jump to return in IACC
+    lda zpTALLY    ; get COUNT
+    bcc SINSTK     ; jump to return in IACC
 
 ; ----------------------------------------------------------------------------
 
@@ -10051,9 +10010,9 @@ COUNT:
 ; ============================
 
 RLOMEM:
-        lda zpLOMEM     ; get LOMEM to YA
-        ldy zpLOMEM+1
-        bcc AYACC       ; jump to return in IACC
+    lda zpLOMEM     ; get LOMEM to YA
+    ldy zpLOMEM+1
+    bcc AYACC       ; jump to return in IACC
 
 ; ----------------------------------------------------------------------------
 
@@ -10061,9 +10020,9 @@ RLOMEM:
 ; ============================
 
 RHIMEM:
-        lda zpHIMEM     ; get HIMEM to YA
-        ldy zpHIMEM+1
-        bcc AYACC       ; jump to return in IACC
+    lda zpHIMEM     ; get HIMEM to YA
+    ldy zpHIMEM+1
+    bcc AYACC       ; jump to return in IACC
 
 ; ----------------------------------------------------------------------------
 
@@ -10071,9 +10030,9 @@ RHIMEM:
 ; ===============================
 
 ERL:
-        ldy zpERL+1     ; get ERL into YA
-        lda zpERL
-        bcc AYACC       ; jump to return in IACC
+    ldy zpERL+1     ; get ERL into YA
+    lda zpERL
+    bcc AYACC       ; jump to return in IACC
 
 ; ----------------------------------------------------------------------------
 
@@ -10081,19 +10040,11 @@ ERL:
 ; ==================================
 
 ERR:
-        ldy #$00
-        lda (FAULT),Y   ; FAULT points to the error number after the BRK
-        bcc AYACC       ; jump to return in IACC
-
-    .endif      ; version > 3
+    ldy #$00
+    lda (FAULT),Y   ; FAULT points to the error number after the BRK
+    bcc AYACC       ; jump to return in IACC
 
 ; ----------------------------------------------------------------------------
-
-    .if version < 3
-HEXDED:
-        brk
-        dta $1C, 'Bad HEX', 0
-    .endif
 
 ; =TIME - Read system TIME
 ; ========================
@@ -10107,109 +10058,6 @@ RTIME:
     .endif
     lda #$40          ; return type is integer
     rts
-
-; ----------------------------------------------------------------------------
-
-    .if version < 3
-
-; =PAGE - Read PAGE
-; =================
-
-RPAGE:
-        lda #$00        ; set YA to PAGE
-        ldy zpTXTP
-        jmp AYACC       ; return YA in IACC
-
-JMPFACERR:
-        jmp FACERR      ; 'No such variable' error
-
-; ----------------------------------------------------------------------------
-
-; =FALSE
-; ======
-
-FALSE:
-        lda #$00
-        beq SINSTK      ; return 0 in IACC
-
-LENB:
-        jmp LETM        ; 'Type mismatch' error
-
-; ----------------------------------------------------------------------------
-
-; =LEN string$
-; ============
-
-LEN:
-        jsr FACTOR      ; evaluate argument
-        bne LENB        ; 'Type mismatch' if it's not a string
-
-        lda zpCLEN      ; get string length
-
-        ; fallthrough, return in IACC with the top bytes set to zero
-
-; Return 8-bit integer
-; --------------------
-
-SINSTK:
-        ldy #$00
-        beq AYACC     ; Clear b8-b15, jump to return 16-bit int
-
-; =TOP - Return top of program
-; ============================
-; There is no TOP token, only TO (as in FOR). Check for 'P'
-
-TO:
-        ldy zpAECUR
-        lda (zpAELINE),Y    ; get next character
-        cmp #'P'
-        bne JMPFACERR       ; 'No such variable' error if it's not a 'P'
-
-        inc zpAECUR         ; step past 'P'
-        lda zpTOP           ; set YA to TOP
-        ldy zpTOP+1
-
-        ; fallthrough, return YA in IACC
-
-; Return 16-bit integer in AY
-; ---------------------------
-AYACC:
-        sta zpIACC
-        sty zpIACC+1      ; Store AY in integer accumulator
-        lda #$00
-        sta zpIACC+2
-        sta zpIACC+3      ; Set b16-b31 to 0
-        lda #$40
-        rts               ; Return 'integer'
-
-; ----------------------------------------------------------------------------
-
-; =COUNT - Return COUNT
-; =====================
-COUNT:
-        lda zpTALLY     ; get COUNT
-        jmp SINSTK      ; jump to return in IACC
-
-; ----------------------------------------------------------------------------
-
-; =LOMEM - Start of BASIC heap
-; ============================
-
-RLOMEM:
-        lda zpLOMEM     ; get LOMEM in YA
-        ldy zpLOMEM+1
-        jmp AYACC       ; jump to return in IACC
-
-; ----------------------------------------------------------------------------
-
-; =HIMEM - Top of BASIC memory
-; ============================
-RHIMEM:
-        lda zpHIMEM     ; get HIMEM in YA
-        ldy zpHIMEM+1
-        jmp AYACC       ; return YA in IACC
-
-    .endif      ; version < 3
 
 ; ----------------------------------------------------------------------------
 
@@ -10322,76 +10170,37 @@ MTOFACC:
 
 FRNDAB:
 
-    .if version >= 3
-        ldy #$04      ; Rotate through four bytes, faster but bigger
+    ldy #$04      ; Rotate through four bytes, faster but bigger
 RTOP:
-        ror zpSEED+4
-        lda zpSEED+3
-        pha
-        ror
-        sta zpSEED+4
-        lda zpSEED+2
-        tax
-        asl
-        asl
-        asl
-        asl
-        sta zpSEED+3
-        lda zpSEED+1
-        sta zpSEED+2
-        lsr
-        lsr
-        lsr
-        lsr
-        ora zpSEED+3
-        eor zpSEED+4
-        stx zpSEED+3
-        ldx zpSEED
-        stx zpSEED+1
-        sta zpSEED
-        pla
-        sta zpSEED+4
-        dey
-        bne RTOP
-        rts
-    .elseif version < 3
-        ldy #$20      ; Rotate through 32 bits, shorter but slower
-RTOP:
-        lda zpSEED+2
-        lsr
-        lsr
-        lsr
-        eor zpSEED+4
-        ror
-        rol zpSEED
-        rol zpSEED+1
-        rol zpSEED+2
-        rol zpSEED+3
-        rol zpSEED+4
-        dey
-        bne RTOP
-        rts
-
-; ----------------------------------------------------------------------------
-
-; =ERL - Return error line number
-; ===============================
-
-ERL:
-        ldy zpERL+1     ; get ERL into YA
-        lda zpERL
-        jmp AYACC       ; return YA in IACC
-
-; ----------------------------------------------------------------------------
-
-; =ERR - Return current error number
-; ==================================
-ERR:
-        ldy #$00        ; get error number in YA
-        lda (FAULT),Y   ; FAULT points to the byte after the BRK
-        jmp AYACC       ; return YA in IACC
-
-    .endif          ; version < 3
+    ror zpSEED+4
+    lda zpSEED+3
+    pha
+    ror
+    sta zpSEED+4
+    lda zpSEED+2
+    tax
+    asl
+    asl
+    asl
+    asl
+    sta zpSEED+3
+    lda zpSEED+1
+    sta zpSEED+2
+    lsr
+    lsr
+    lsr
+    lsr
+    ora zpSEED+3
+    eor zpSEED+4
+    stx zpSEED+3
+    ldx zpSEED
+    stx zpSEED+1
+    sta zpSEED
+    pla
+    sta zpSEED+4
+    dey
+    bne RTOP
+    rts
 
 ; ----------------------------------------------------------------------------
 
@@ -11159,13 +10968,9 @@ FNARGW:
 
 RETINF:
     ldy zpIACC+2            ; get the type of the variable
-    .if version < 3
-        cpy #$04
-        bne FNINFO          ; jump if it's not an integer
-    .elseif version >= 3
-        cpy #$05
-        bcs FNINFO          ; jump if it's a float
-    .endif
+    cpy #$05
+    bcs FNINFO          ; jump if it's a float
+
     ldx #zpWORK         ; point to WORK
     jsr ACCTOM          ; copy IACC to WORK     (address and type)
 
@@ -11771,17 +11576,11 @@ LISTPS:
     beq LISTPX          ; exit if level of indentation is zero
     bmi LISTPT          ; print a single space if it's negative
 
-    .if version >= 3
-        asl             ; multiply by 2
-        tax             ; this saves one byte (instead of jsr CHOUT)
-    .endif
+    asl             ; multiply by 2
+    tax             ; this saves one byte (instead of jsr CHOUT)
 
 LISTPL:
     jsr LISTPT          ; print space
-
-    .if version < 3
-        jsr CHOUT       ; and another one
-    .endif
 
     dex
     bne LISTPL          ; loop for the required number of times
@@ -13849,61 +13648,26 @@ GETMAC:
 SAVE:
     jsr ENDER               ; Check program, set TOP
 
-    .if version < 3
-        lda zpTOP
-        sta F_END+0         ; Set FILE.END to TOP
-        lda zpTOP+1
-        sta F_END+1
-        lda #<ENTRY
-        sta F_EXEC+0        ; Set FILE.EXEC to STARTUP
-        lda #>ENTRY
-        sta F_EXEC+1
-        lda zpTXTP
-        sta F_START+1       ; Set FILE.START to PAGE
-        jsr OSTHIG          ; Set FILE.LOAD to PAGE
+    jsr OSTHIG           ; Set FILE.LOAD to PAGE
+    .ifdef MOS_BBC
+        stx F_EXEC+2
+        sty F_EXEC+3     ; Set address high words
+        stx F_START+2
+        sty F_START+3
+        stx F_END+2
+        sty F_END+3
+        sta F_START+0    ; Low byte of FILE.START
     .endif
-    .if version < 3
-        .ifdef MOS_BBC
-            stx F_EXEC+2
-            sty F_EXEC+3    ; Set address high words
-            stx F_START+2
-            sty F_START+3
-            stx F_END+2
-            sty F_END+3
-        .endif
-        .ifdef MOS_BBC
-            sta F_START+0    ; Low byte of FILE.START
-        .endif
-    .endif
-
-    .if version >= 3
-        jsr OSTHIG           ; Set FILE.LOAD to PAGE
-    .endif
-    .if version >= 3
-        .ifdef MOS_BBC
-            stx F_EXEC+2
-            sty F_EXEC+3     ; Set address high words
-            stx F_START+2
-            sty F_START+3
-            stx F_END+2
-            sty F_END+3
-        .endif
-        .ifdef MOS_BBC
-            sta F_START+0    ; Low byte of FILE.START
-        .endif
-    .endif
-    .if version >= 3
-        ldx zpTOP
-        stx F_END+0       ; Set FILE.END to TOP
-        ldx zpTOP+1
-        stx F_END+1
-        ldx #<ENTRY
-        stx F_EXEC+0      ; Set FILE.EXEC to STARTUP
-        ldx #>ENTRY
-        stx F_EXEC+1
-        ldx zpTXTP
-        stx F_START+1     ; High byte of FILE.START=PAGE
-    .endif
+    ldx zpTOP
+    stx F_END+0       ; Set FILE.END to TOP
+    ldx zpTOP+1
+    stx F_END+1
+    ldx #<ENTRY
+    stx F_EXEC+0      ; Set FILE.EXEC to STARTUP
+    ldx #>ENTRY
+    stx F_EXEC+1
+    ldx zpTXTP
+    stx F_START+1     ; High byte of FILE.START=PAGE
     tay
     ldx #zpWORK           ; YX pointer
     .ifdef MOS_BBC
@@ -14119,12 +13883,6 @@ CHANN:
 NULLRET:
     rts
 
-    .if version < 3
-CHANNE:
-        brk
-        dta $2D, 'Missing #', 0
-    .endif
-
 ; ----------------------------------------------------------------------------
 
 ; Print inline text
@@ -14171,33 +13929,17 @@ REPLOP:
 REPORX:
     jmp NXT           ; Jump to main execution loop
 
-    .if version >= 3
 CHANNE:
-        brk
-        dta $2D, 'Missing #', 0
-    .endif
+    brk
+    dta $2D, 'Missing #', 0
 
   .if .def TARGET_BBC
     .if * > [romstart + $4000]
         .error "***WARNING: Code overrun"
     .endif
 
-    .if version < 3 && [[*+6]&$ff] > 6
-        brk
-        dta 'Roger'
-        brk
-    .endif
-
     .if [[*+3]&$ff] > 3
-        .if version == 2
-            dta '2', '.', '0', '0'
-        .elseif version == 3
-            .if minorversion < 10
-                dta '3'
-            .else
-                dta '3', '.', '1'
-            .endif
-        .endif
+        dta '3', '.', '1'
     .endif
   .endif
 
