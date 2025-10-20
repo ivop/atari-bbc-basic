@@ -47,7 +47,7 @@
         zp        = $80            ; Start of ZP addresses
         FAULT     = $fd            ; Pointer to error block
         ESCFLG    = $ff            ; Escape pending flag
-        BRKV      = $0202
+        BRKV      = VBREAK
         WRCHV     = 0
 
     .else
@@ -227,6 +227,8 @@ tknOSCLI    = $FF
     .if .def TARGET_ATARI
         org $3000
         icl 'part2.s'
+
+        ini under_rom_loader
 
         org $c000
         icl 'part1.s'
