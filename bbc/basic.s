@@ -8632,18 +8632,8 @@ FLOG:
     ; error when argument is negative or zero
 
 FLOGA:
-    .if foldup == 0
-        brk
-        dta $16
-        dta 'Log range'
-        brk
-    .elseif foldup != 0
-        brk
-        dta $16
-        dta tknLOG
-        dta ' RANGE'
-        brk
-    .endif
+    brk
+    dta $16, 'Log range', 0         ; xxx: tknLOG ?
 
 FLOGB:
     jsr FCLRW       ; clear FWRK
@@ -9029,13 +9019,7 @@ FRNGD:
 
 FRNGQQ:
     brk
-    dta $17
-    .if foldup == 1
-        dta 'ACCURACY LOST'
-    .else
-        dta 'Accuracy lost'
-    .endif
-    brk
+    dta $17, 'Accuracy lost', 0
 
 ; ----------------------------------------------------------------------------
 
@@ -9147,18 +9131,8 @@ FEXPB:
     rts
 
 FEXPC:
-    .if foldup == 0
-        brk
-        dta $18
-        dta 'Exp range'
-        brk
-    .elseif foldup != 0
-        brk
-        dta $18
-        dta tknEXP
-        dta ' RANGE'
-        brk
-    .endif
+    brk
+    dta $18, 'Exp range', 0     ; xxx: tknEXP
 
 FEXPA:
     jsr FFRAC       ; get fractional part, leave integer part in FQUAD
@@ -10192,32 +10166,16 @@ GETPC:
 
 FACERR:
     brk
-    dta $1A
-    .if foldup == 1
-        dta 'NO SUCH VARIABLE'
-    .else
-        dta 'No such variable'
-    .endif
+    dta $1A, 'No such variable'
 
     brk
     .if version >= 3
 BKTERR = * -1               ; include previous BRK
-        dta $1B
-        .if foldup == 1
-            dta 'MISSING )'
-        .else
-            dta 'Missing )'
-        .endif
+        dta $1B, 'Missing )'
 
 HEXDED:
         brk                 ; both end of BKTERR and start of HEXDED
-        dta $1C
-        .if foldup == 1
-            dta 'BAD HEX'
-        .else
-            dta 'Bad HEX'
-        .endif
-        brk
+        dta $1C, 'Bad HEX', 0
     .endif
 
 ; ----------------------------------------------------------------------------
@@ -10235,13 +10193,7 @@ BRA:
     .if version < 3
 BKTERR:
         brk
-        dta $1B
-        .if foldup == 1
-            dta 'MISSING )'
-        .else
-            dta 'Missing )'
-        .endif
-        brk
+        dta $1B, 'Missing )', 0
     .endif
 
 HEXIN:
@@ -10420,13 +10372,7 @@ ERR:
     .if version < 3
 HEXDED:
         brk
-        dta $1C
-        .if foldup == 1
-            dta 'BAD HEX'
-        .else
-            dta 'Bad HEX'
-        .endif
-        brk
+        dta $1C, 'Bad HEX', 0
     .endif
 
 ; =TIME - Read system TIME
@@ -11058,14 +11004,7 @@ FNMISS:
     sta zpLINE
 
     brk
-    dta $1D
-    .if foldup == 1
-        dta 'NO SUCH '
-    .else
-        dta 'No such '
-    .endif
-    dta tknFN, '/', tknPROC
-    brk
+    dta $1D, 'No such ', tknFN, '/', tknPROC, 0
 
 ; Look through program for FN/PROC
 ; --------------------------------
@@ -11167,13 +11106,7 @@ FNFDLK:
 
 FNCALL:
     brk
-    dta $1E
-    .if foldup == 1
-        dta 'BAD CALL'
-    .else
-        dta 'Bad call'
-    .endif
-    brk
+    dta $1E, 'Bad call', 0
 
 ; ----------------------------------------------------------------------------
 
@@ -11446,13 +11379,7 @@ ARGMAT:
     sta zpLINE
 
     brk                 ; and trigger error
-    dta $1F
-    .if foldup == 1
-        dta 'ARGUMENTS'
-    .else
-        dta 'Arguments'
-    .endif
-    brk
+    dta $1F, 'Arguments', 0
 
 FNARGZ:
     jsr POPACC          ; pull type of the calling parameter from BASIC stack
@@ -11786,11 +11713,7 @@ BASERR:
     dta tknERL
     dta tknPRINT
     dta '"'
-    .if foldup == 1
-        dta ' AT LINE '
-    .else
-        dta ' at line '
-    .endif
+    dta ' at line '
     dta '"', ';'
     dta tknERL
     dta ':'
@@ -12358,14 +12281,7 @@ LPSIMT:
 
 NEXER:
     brk
-    dta $20
-    .if foldup == 1
-        dta 'NO '
-    .else
-        dta 'No '
-    .endif
-    dta tknFOR
-    brk
+    dta $20, 'No ', tknFOR, 0
 
 ; NEXT [variable [,...]]
 ; ======================
@@ -12559,33 +12475,15 @@ NXTFIN:
 
 FORCV:
     brk
-    dta $22
-    dta tknFOR
-    .if foldup == 1
-        dta ' VARIABLE'
-    .else
-        dta ' variable'
-    .endif
+    dta $22, tknFOR, ' variable'
     ; brk overlap
 FORDP:
     brk
-    dta $23
-    .if foldup == 1
-        dta 'TOO MANY ', tknFOR, 'S'
-    .else
-        dta 'Too many ', tknFOR, 's'
-    .endif
+    dta $23, 'Too many ', tknFOR, 's'
     ; brk overlap
 FORTO:
     brk
-    dta $24
-    .if foldup == 1
-        dta 'NO '
-    .else
-        dta 'No '
-    .endif
-    dta tknTO
-    brk
+    dta $24, 'No ', tknTO, 0
 
 ; FOR numvar = numeric TO numeric [STEP numeric]
 ; ==============================================
@@ -12735,25 +12633,14 @@ ONGOSB:
 
 GOSDP:
     brk
-    dta $25
-    .if foldup == 1
-        dta 'TOO MANY ', tknGOSUB, 'S'
-    .else
-        dta 'Too many ', tknGOSUB, 's'
-    .endif
+    dta $25, 'Too many ', tknGOSUB, 's'
+    ; brk overlap
 
 ; ----------------------------------------------------------------------------
 
 RETNUN:
     brk
-    dta $26
-    .if foldup == 1
-        dta 'NO '
-    .else
-        dta 'No '
-    .endif
-    dta tknGOSUB
-    brk
+    dta $26, 'No ', tknGOSUB, 0
 
 ; RETURN
 ; ======
