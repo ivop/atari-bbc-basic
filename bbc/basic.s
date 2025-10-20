@@ -31,7 +31,6 @@
         VERSION       = 3
         MINORVERSION  = 10
 
-        foldup    = 0
         workspace = $0400
         membot    = 0           ; Use OSBYTE to find memory limits
         memtop    = 0           ; ...
@@ -12722,14 +12721,7 @@ ONERRG:
 
 ONER:
     brk
-    dta $27
-    dta tknON
-    .if foldup == 1
-        dta ' SYNTAX'
-    .else
-        dta ' syntax'
-    .endif
-    brk
+    dta $27, tknON, ' syntax', 0
 
 ; ----------------------------------------------------------------------------
 
@@ -12847,14 +12839,7 @@ ONELSE:
     bne ONELSE        ; loop until end of line
 
     brk
-    dta $28
-    dta tknON
-    .if foldup == 1
-        dta ' RANGE'
-    .else
-        dta ' range'
-    .endif
-    brk
+    dta $28, tknON, ' range', 0
 
 ONELS:
     sty zpCURSOR        ; store LINE offset
@@ -12883,13 +12868,7 @@ GOTGO:
 
 NOLINE:
     brk
-    dta $29
-    .if foldup == 1
-        dta 'NO SUCH LINE'
-    .else
-        dta 'No such line'
-    .endif
-    brk
+    dta $29, 'No such line', 0
 
 ; ----------------------------------------------------------------------------
 
@@ -13303,24 +13282,11 @@ DATANS:
 
 DATAOT:
     brk
-    dta $2A
-    .if foldup == 1
-        dta 'OUT OF '
-    .else
-        dta 'Out of '
-    .endif
-    dta tknDATA
+    dta $2A, 'Out of ', tknDATA
     ; brk overlap
 NODOS:
     brk
-    dta $2B
-    .if foldup == 1
-        dta 'NO '
-    .else
-        dta 'No '
-    .endif
-    dta tknREPEAT
-    brk
+    dta $2B, 'No ', tknREPEAT, 0
 
 DATAOL:
     iny             ; increment pointer to the token for the word DATA
@@ -13362,15 +13328,7 @@ REDO:
 
 DODP:
     brk
-    dta $2C
-    .if foldup == 1
-        dta 'TOO MANY '
-        dta tknREPEAT, 'S'
-    .else
-        dta 'Too many '
-        dta tknREPEAT, 's'
-    .endif
-    brk
+    dta $2C, 'Too many ', tknREPEAT, 's', 0
 
 ; ----------------------------------------------------------------------------
 
@@ -13586,14 +13544,7 @@ LENGTH:
     jsr SETFSA          ; carry out a CLEAR operation
 
     brk
-    dta 0
-    dta tknLINE
-    .if foldup == 1
-        dta ' SPACE'
-    .else
-        dta ' space'
-    .endif
-    brk
+    dta 0, tknLINE, ' space', 0
 
 ; ----------------------------------------------------------------------------
 
@@ -14070,11 +14021,7 @@ ENDADT:
 BADPRO:
     jsr VSTRNG              ; Print inline text
     dta 13                  ; CR
-    .if foldup == 1
-        dta 'BAD PROGRAM'
-    .else
-        dta 'Bad program'
-    .endif
+    dta 'Bad program'
     dta 13                  ; CR
 
     nop                     ; $ea, has bit 7 set, end of string marker
@@ -14454,13 +14401,7 @@ NULLRET:
     .if version < 3
 CHANNE:
         brk
-        dta $2D
-        .if foldup == 1
-            dta 'MISSING #'
-        .else
-            dta 'Missing #'
-        .endif
-        brk
+        dta $2D, 'Missing #', 0
     .endif
 
 ; ----------------------------------------------------------------------------
@@ -14512,13 +14453,7 @@ REPORX:
     .if version >= 3
 CHANNE:
         brk
-        dta $2D
-        .if foldup == 1
-            dta 'MISSING #'
-        .else
-            dta 'Missing #'
-        .endif
-        brk
+        dta $2D, 'Missing #', 0
     .endif
 
   .if .def TARGET_BBC
