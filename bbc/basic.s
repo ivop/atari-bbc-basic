@@ -1384,34 +1384,6 @@ OPTION:
 
 ; ----------------------------------------------------------------------------
 
-; Evaluate integer expression
-
-ASEXPR:
-    jsr AEEXPR       ; evaluate expression
-    jsr INTEGB       ; ensure it is integer
-
-ASCUR:
-    ldy zpAECUR
-    sty zpCURSOR     ; move cursor offset
-    rts
-
-; ----------------------------------------------------------------------------
-
-; Add constants to zpOPCODE
-
-PLUS10:             ; + $10 (+16)
-    jsr PLUS8
-PLUS8:
-    jsr PLUS4
-PLUS4:
-    lda zpOPCODE
-    clc
-    adc #$04
-    sta zpOPCODE
-    rts
-
-; ----------------------------------------------------------------------------
-
 EQUBWS:
     ldx #$01          ; Prepare for one byte
     ldy zpCURSOR
@@ -4952,6 +4924,38 @@ SPGETN:
 
 FDA:
     clc             ; indicate line number was not found
+    rts
+
+; ----------------------------------------------------------------------------
+
+    .if .def TARGET_ATARI
+        org $d800
+    .endif
+
+; Evaluate integer expression
+
+ASEXPR:
+    jsr AEEXPR       ; evaluate expression
+    jsr INTEGB       ; ensure it is integer
+
+ASCUR:
+    ldy zpAECUR
+    sty zpCURSOR     ; move cursor offset
+    rts
+
+; ----------------------------------------------------------------------------
+
+; Add constants to zpOPCODE
+
+PLUS10:             ; + $10 (+16)
+    jsr PLUS8
+PLUS8:
+    jsr PLUS4
+PLUS4:
+    lda zpOPCODE
+    clc
+    adc #$04
+    sta zpOPCODE
     rts
 
 ; ----------------------------------------------------------------------------
