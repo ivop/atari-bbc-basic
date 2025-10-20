@@ -12,7 +12,7 @@ basic310hi.rom: basic.s
 	$(MADS) -d:TARGET_BBC=1 -o:$@ $<
 
 clean:
-	rm -f *.rom *.lst
+	rm -f *.rom *.xex *.lst
 
 cleaner: clean
 	rm -f *~ */*~
