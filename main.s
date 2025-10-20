@@ -252,9 +252,84 @@ INIDOS:
     rts
 .endp
 
+; Temporary ZP locations
+
+start_addr = $e0
+end_addr   = $e2
+bufp       = $e4
+tmp1       = $e6
+
 .proc load_blocks
+    ldx #$10                ; IOCB #1
+
+    ; load 4 bytes, start and end address
+
+    mwa #start_addr IOCB0+ICBAL,x
+    mwa #4 IOCB0+ICBLL,x
+    mwa #7 IOCB0+ICCOM,x
+    jsr CIOV
+    bmi load_end
+
+    ; load data to buffer
+
+    lda #<LOAD_BUFFER
+    sta bufp
+    sta IOCB0+ICBAL,x
+    lda #>LOAD_BUFFER
+    sta bufp+1
+    sta IOCB0+ICBAH,x
+
+    ; calculate length, end_addr - start_addr + 1
+
+    sbw end_addr start_addr tmp1
+    inw tmp1
+
+    mwa tmp1 IOCB0+ICBLL,x
+    jsr CIOV
+    bmi load_error
+
+    ; copy to RAM under ROM
+
+    dec PORTB
+
+    ldy #0
+    ldx tmp1+1
+    beq check_lsb
+
+copy_loop:
+    lda (bufp),y
+    sta (start_addr),y
+    iny
+    bne copy_loop
+
+    inc start_addr+1
+    inc bufp+1
+    dex
+    bne copy_loop
+
+check_lsb:
+    ldx tmp1
+    beq copy_done
+
+copy_loop_last_page:
+    lda (bufp),y
+    sta (start_addr),y
+    iny
+    dex
+    bne copy_loop_last_page
+
+copy_done:
+    inc PORTB
+    jmp load_blocks
+
+load_end:
     rts
+
+load_error:
+    jmp(DOSVEC)
 .endp
+
+ LOAD_BUFFER = *
 
 ; ----------------------------------------------------------------------------
 
