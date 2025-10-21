@@ -5201,13 +5201,13 @@ RND:
     ldx #zpSEED       ; offset to seed location relative to start of ZP
 
 MTOACC:
-    lda zp+0,X        ; copy number pointed to by X to IACC
+    lda 0+0,X        ; copy number pointed to by X to IACC
     sta zpIACC
-    lda zp+1,X
+    lda 0+1,X
     sta zpIACC+1
-    lda zp+2,X
+    lda 0+2,X
     sta zpIACC+2
-    lda zp+3,X
+    lda 0+3,X
     sta zpIACC+3
 
     lda #$40          ; return type is integer
@@ -8451,19 +8451,19 @@ POPWRK:
 POPX:
     ldy #$03            ; copy four bytes (3..0)
     lda (zpAESTKP),Y
-    sta zp+3,X
+    sta 0+3,X
 
     dey
     lda (zpAESTKP),Y
-    sta zp+2,X
+    sta 0+2,X
 
     dey
     lda (zpAESTKP),Y
-    sta zp+1,X
+    sta 0+1,X
 
     dey
     lda (zpAESTKP),Y
-    sta zp+0,X
+    sta 0+0,X
 
     clc
     lda zpAESTKP
@@ -8509,13 +8509,13 @@ HIDECE:
 
 ACCTOM:
     lda zpIACC
-    sta zp+0,X
+    sta 0+0,X
     lda zpIACC+1
-    sta zp+1,X
+    sta 0+1,X
     lda zpIACC+2
-    sta zp+2,X
+    sta 0+2,X
     lda zpIACC+3
-    sta zp+3,X
+    sta 0+3,X
     rts
 
 ; ----------------------------------------------------------------------------
