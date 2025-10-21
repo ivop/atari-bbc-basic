@@ -94,6 +94,7 @@ ptr2 = $e2
 save_a = $e4
 save_x = $e5
 save_y = $e6
+irq_a = $e7
 
 ; ----------------------------------------------------------------------------
 
@@ -113,12 +114,12 @@ FONT:
 
 .proc splash
     mva #>FONT CHBAS
-    mva #15 COLOR1
-    mvx #0 COLOR2       ; X=0, also IOCB number later
+    mwa #$3c00 _MEMLO
 
     mwa #message IOCB0+ICBAL
     mwa #(end_message-message) IOCB0+ICBLL
     mva #$0b IOCB0+ICCOM
+    ldx #0
     jsr CIOV
     rts
 .endp
@@ -205,6 +206,25 @@ end_message:
 ; IRQ when ROM is off
 
 .proc irq_proc
+    sta irq_a
+
+    pla
+    pha
+    and #$10
+    beq no_BRK
+
+    pla
+    pla
+    sec
+    sbc #1
+    sta FAULT+0
+    pla
+    sbc #0
+    sta FAULT+1
+    jmp (BRKV)
+
+no_BRK:
+    lda irq_a
     pha
 
     lda #>irq_end
@@ -212,7 +232,9 @@ end_message:
     lda #<irq_end
     pha
     php
+
     inc PORTB
+
     jmp (VIMIRQ)
 .endp
 
@@ -220,8 +242,6 @@ end_message:
 
 .proc reset_proc
     mva #>FONT CHBAS
-    mva #15 COLOR1
-    mva #0 COLOR2
 
 INIDOS:
     jsr $1234

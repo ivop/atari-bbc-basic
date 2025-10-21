@@ -8,7 +8,7 @@ bbcbasic.atr: autorun.sys
 	$(ATR) bbcbasic.atr put autorun.sys
 
 autorun.sys: main.s
-	$(MADS) -o:$@ $<
+	$(MADS) -l:debug.lst -o:$@ $<
 
 clean:
 	rm -f *.sys *.lst *.atr
