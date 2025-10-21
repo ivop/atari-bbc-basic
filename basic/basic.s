@@ -54,7 +54,7 @@
         .error "Please specify your build (i.e. -d:TARGET_ATARI=1)"
     .endif
 
-    .if .def MOS_BBC
+    .if .def MOS_BBC && .not .def NO_MOS_VECTORS
 
         OSFIND = $FFCE
         OSBPUT = $FFD4
@@ -68,6 +68,8 @@
         OSWORD = $FFF1
         OSBYTE = $FFF4
         OS_CLI = $FFF7
+
+    .elseif .def NO_MOS_VECTORS
 
     .else
         .error "No MOS API specified"
