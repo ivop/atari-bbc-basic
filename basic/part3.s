@@ -6295,7 +6295,7 @@ BREKA:
     stx zpBYTESM        ; set OPT to $ff
 
     txs                 ; clear machine stack
-
+    cli
     jmp STMT            ; Jump to execution loop
 
 ; ----------------------------------------------------------------------------
