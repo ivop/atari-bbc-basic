@@ -32,6 +32,8 @@ COLOR4 = $02c8
 _MEMTOP = $02e5
 _MEMLO  = $02e7
 
+CRSINH = $02f0
+
 CHBAS  = $02f4
 
 IOCB0  = $0340
@@ -114,6 +116,7 @@ FONT:
 
 .proc splash
     mva #>FONT CHBAS
+    sta CRSINH
     mwa #$3c00 _MEMLO
 
     mwa #message IOCB0+ICBAL
@@ -125,7 +128,7 @@ FONT:
 .endp
 
 message:
-    dta 125,'BBC BASIC 3.10',155
+    dta 125,155,155,'BBC BASIC 3.10',155,155
 end_message:
 
 ; ----------------------------------------------------------------------------
@@ -268,6 +271,10 @@ jsr_getkey:
 
 .proc OSFIND
     jmp *
+    ; A=0, close handle in Y, Y=0, close all handles
+    ; A=0x40 open for input
+    ; A=0x80 open for output
+    ; A=0xc0 open for update / random access (not possible with DOS 2.5)
 .endp
 
 ; ----------------------------------------------------------------------------
@@ -286,24 +293,36 @@ jsr_getkey:
 
 .proc OSARGS
     jmp *
+    ; Not possible with DOS 2.5
+    ; 0x00 PTR#
+    ; 0x01 PTR#=
+    ; 0x02 EXT#=
 .endp
 
 ; ----------------------------------------------------------------------------
 
 .proc OSFILE
     jmp *
+    ; A=$00     save file with pblock info
+    ; A=$ff     load file with pblock info
 .endp
 
 ; ----------------------------------------------------------------------------
 
 .proc OSRDCH
     jmp *
+    ; get key, blocking, set ESCFLG
 .endp
 
 ; ----------------------------------------------------------------------------
 
 .proc OSASCI
-    jmp *
+    cmp #$0d
+    beq OSNEWL
+    cmp #$0c
+    bne OSWRCH
+    lda #125            ; Atari CLS
+    bne OSWRCH
 .endp
 
 ; ----------------------------------------------------------------------------
@@ -350,6 +369,10 @@ buf:
 
     jmp *
 
+    ; $01   get clock in cs
+    ; $02   set clock in cs
+    ; $09   read pixel value
+
 read_line:
     stx ptr
     sty ptr+1
@@ -387,13 +410,33 @@ read_line:
 ; ----------------------------------------------------------------------------
 
 .proc OSBYTE
+    cmp #$7e
+    beq set_escflg
+    cmp #$82
+    beq get_high_order_address
     cmp #$83
     beq get_LOMEM
     cmp #$84
     beq get_HIMEM
+    cmp #$da
+    beq vdu_queue
 
     jmp *
-    dta 'OSBYTE'
+
+    ; $7f   check EOF on file handle
+    ; $80   ADVAL
+    ; $81   read key with time limit
+    ; $85   read bottom of display mem if given mode was selected
+    ; $86   read POS and VPOS
+
+set_escflg:
+    sta ESCFLG
+    rts
+
+get_high_order_address:
+    ldx #$ff
+    ldy #$ff
+    rts
 
 get_LOMEM:
     ldx _MEMLO
@@ -405,13 +448,20 @@ get_HIMEM:
     ldy _MEMTOP+1
     rts
 
+vdu_queue:
+    rts
 .endp
 
 ; ----------------------------------------------------------------------------
 
 .proc OS_CLI
-    jmp *
+    rts                 ; implement *DIR
 .endp
+
+; ----------------------------------------------------------------------------
+
+default_report:
+    dta 0, '(C)1983 Acorn', 13, 0
 
 ; ----------------------------------------------------------------------------
 ; ============================================================================
@@ -449,6 +499,7 @@ get_HIMEM:
     ora BOOT
     sta BOOT
     mva #0 COLDST
+    sta CRSINH
 
     mva #>$c000 RAMTOP          ; set RAMTOP
     lsr
@@ -457,6 +508,8 @@ get_HIMEM:
 ;    jsr open_editor
 
     dec PORTB
+
+    mwa #default_report FAULT
 
     jmp $c000                   ; jump to BBC BASIC
 .endp
