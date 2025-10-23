@@ -65,6 +65,13 @@ ICAX4  = $0d
 ICAX5  = $0e
 ICAX6  = $0f
 
+COPEN = 3
+CCLSE = 12
+CGTXT = 5
+CPTXT = 9
+CGBIN = 7
+CPBIN = 11
+
 PORTB  = $d301
 
 NMIEN  = $d40e
@@ -258,6 +265,13 @@ INIDOS:
 
 ; ----------------------------------------------------------------------------
 
+.proc close_iocb
+    mva #CCLSE IOCB0+ICCOM,x
+    jmp call_ciov
+.endp
+
+; ----------------------------------------------------------------------------
+
 .proc getkey
     inc PORTB
 jsr_getkey:
@@ -303,9 +317,62 @@ jsr_getkey:
 ; ----------------------------------------------------------------------------
 
 .proc OSFILE
+    cmp #$ff
+    beq load
     jmp *
     ; A=$00     save file with pblock info
     ; A=$ff     load file with pblock info
+
+load:
+    stx ptr
+    sty ptr+1
+
+    ldx #$70
+    jsr close_iocb
+
+    ldy #0
+    lda (ptr),y
+    sta ptr2
+    iny
+    lda (ptr),y
+    sta ptr2+1
+
+    ldy #$ff
+@:
+    iny
+    lda (ptr2),y
+    cmp #$0d
+    bne @-
+
+    lda #155
+    sta (ptr2),y
+
+    mwa ptr2 IOCB7+ICBAL
+    mva #4 IOCB7+ICAX1
+    mva #0 IOCB7+ICAX2
+    mva #COPEN IOCB7+ICCOM
+    jsr call_ciov
+    bmi file_not_found
+
+    ldy #2
+    lda (ptr),y
+    sta IOCB7+ICBAL
+    iny
+    lda (ptr),y
+    sta IOCB7+ICBAH
+
+    lda #$ff
+    sta IOCB7+ICBLL
+    sta IOCB7+ICBLH
+
+    mva #CGBIN IOCB7+ICCOM
+    jsr call_ciov
+
+    rts
+
+file_not_found:
+    brk
+    dta 0,'File not found',0
 .endp
 
 ; ----------------------------------------------------------------------------
@@ -390,7 +457,7 @@ read_line:
     sta ptr2+1
 
     mwa #127 IOCB0+ICBLL
-    mva #5 IOCB0+ICCOM
+    mva #CGTXT IOCB0+ICCOM
     ldx #0
 
     jsr call_ciov
@@ -546,6 +613,7 @@ default_report:
     mwa #irq_proc irq_vector
 
     mva #$40 NMIEN              ; enable NMI
+    cli
 
     inc PORTB                   ; enable OS
 
@@ -586,9 +654,9 @@ default_report:
 
     ; load 4 bytes, start and end address
 
-    mwa #start_addr IOCB0+ICBAL,x
-    mwa #4 IOCB0+ICBLL,x
-    mwa #7 IOCB0+ICCOM,x
+    mwa #start_addr IOCB1+ICBAL
+    mwa #4 IOCB1+ICBLL
+    mva #7 IOCB1+ICCOM
     jsr CIOV
     bmi load_end
 
@@ -596,17 +664,17 @@ default_report:
 
     lda #<LOAD_BUFFER
     sta bufp
-    sta IOCB0+ICBAL,x
+    sta IOCB1+ICBAL
     lda #>LOAD_BUFFER
     sta bufp+1
-    sta IOCB0+ICBAH,x
+    sta IOCB1+ICBAH
 
     ; calculate length, end_addr - start_addr + 1
 
     sbw end_addr start_addr tmp1
     inw tmp1
 
-    mwa tmp1 IOCB0+ICBLL,x
+    mwa tmp1 IOCB1+ICBLL
     jsr CIOV
     bmi load_error
 
