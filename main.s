@@ -14,6 +14,7 @@ BOOT   = $09
 DOSVEC = $0a
 DOSINI = $0c
 APPMHI = $0e
+RTCLOK = $12
 RAMTOP = $6a
 
 VDSLST = $0200
@@ -366,11 +367,13 @@ buf:
 .proc OSWORD
     cmp #$00
     beq read_line
+    cmp #$01
+    beq get_clock_in_cs
+    cmp #$02
+    beq set_clock
 
     jmp *
 
-    ; $01   get clock in cs
-    ; $02   set clock in cs
     ; $09   read pixel value
 
 read_line:
@@ -405,6 +408,62 @@ read_line:
     iny
     clc
     rts
+
+get_clock_in_cs:
+    mva #0 NMIEN
+    stx ptr
+    sty ptr+1
+    ldy #0
+
+    lda RTCLOK+2
+    asl
+    sta (ptr),y
+
+    iny
+    lda RTCLOK+1
+    rol
+    sta (ptr),y
+
+    iny
+    lda RTCLOK+0
+    rol
+    sta (ptr),y
+
+    iny
+    lda #0
+    rol
+    sta (ptr),y
+
+    iny
+    lda #0
+    sta (ptr),y
+
+    mva #$40 NMIEN
+    rts
+
+set_clock:
+    mva #0 NMIEN
+    stx ptr
+    sty ptr+1
+    ldy #2
+
+    lda (ptr),y
+    lsr
+    sta RTCLOK+0
+
+    dey
+    lda (ptr),y
+    ror
+    sta RTCLOK+1
+
+    dey
+    lda (ptr),y
+    ror
+    sta RTCLOK+2
+
+    mva #$40 NMIEN
+    rts
+
 .endp
 
 ; ----------------------------------------------------------------------------
