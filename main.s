@@ -385,12 +385,7 @@ file_not_found:
 ; ----------------------------------------------------------------------------
 
 .proc OSASCI
-    cmp #$0d
-    beq OSNEWL
-    cmp #$0c
-    bne OSWRCH
-    lda #125            ; Atari CLS
-    bne OSWRCH
+    jmp OSWRCH
 .endp
 
 ; ----------------------------------------------------------------------------
@@ -408,10 +403,16 @@ file_not_found:
     stx save_x
     sty save_y
 
+;    cmp #$0c
+;    bne nocls
+;    lda #125
+;nocls:
+
     cmp #$0d
-    bne @+
+    bne noeol
     lda #155
-@:
+
+noeol:
     sta buf
 
     mva #11 IOCB0+ICCOM

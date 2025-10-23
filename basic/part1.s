@@ -2648,7 +2648,8 @@ CLG:
 CLS:
     jsr DONE         ; Check end of statement
     jsr BUFEND       ; Set COUNT to zero
-    lda #$0C         ; Do VDU 12
+;    lda #$0C         ; Do VDU 12
+    lda #125         ; Atari Clear Screen
 
 DOCL:
     jsr OSWRCH
