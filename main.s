@@ -80,7 +80,7 @@ NMIRES = $d40f
 NMIST  = $d40f
 
 EDITRV = $e400
-KEYBDV = $d420
+KEYBDV = $e420
 
 CIOV   = $e456
 
@@ -276,7 +276,7 @@ INIDOS:
 
 .proc getkey
     inc PORTB
-jsr_getkey:
+vector = * + 1
     jsr $1234
     dec PORTB
     rts
@@ -317,7 +317,8 @@ old_vector = * + 1
 ; ----------------------------------------------------------------------------
 
 .proc OSARGS
-    jmp *
+    brk
+    dta 0,'PTR/EXT Unsupported',0
     ; Not possible with DOS 2.5
     ; 0x00 PTR#
     ; 0x01 PTR#=
@@ -387,18 +388,18 @@ save:
     dta 0,'I/O Error',0
 .endp
 
+; Enter with A=4 (read) or A=8 (write)
+;
 .proc osfile_common_load_save
-    sta save_a
+    sta save_a          ; save open mode
 
     ldx #$70
     jsr close_iocb
 
     ldy #0              ; get pointer to filename
-    lda (ptr),y
-    sta ptr2            ; into ptr2
+    mva (ptr),y ptr2    ; into ptr2
     iny
-    lda (ptr),y
-    sta ptr2+1
+    mva (ptr),y ptr2+1
 
     ldy #$ff
 @:
@@ -411,7 +412,7 @@ save:
     sta (ptr2),y
 
     mwa ptr2 IOCB7+ICBAL            ; open file
-    mva save_a IOCB7+ICAX1
+    mva save_a IOCB7+ICAX1          ; open mode from save_a
     mva #0 IOCB7+ICAX2
     mva #COPEN IOCB7+ICCOM
     jsr call_ciov
@@ -423,8 +424,7 @@ save:
 ; ----------------------------------------------------------------------------
 
 .proc OSRDCH
-    jmp *
-    ; get key, blocking, set ESCFLG
+    jmp getkey
 .endp
 
 ; ----------------------------------------------------------------------------
@@ -593,6 +593,8 @@ break_key:
 .proc OSBYTE
     cmp #$7e
     beq set_escflg
+    cmp #$80
+    beq adval
     cmp #$82
     beq get_high_order_address
     cmp #$83
@@ -605,7 +607,6 @@ break_key:
     jmp *
 
     ; $7f   check EOF on file handle
-    ; $80   ADVAL
     ; $81   read key with time limit
     ; $85   read bottom of display mem if given mode was selected
     ; $86   read POS and VPOS
@@ -631,12 +632,18 @@ get_HIMEM:
 
 vdu_queue:
     rts
+
+adval:
+    brk
+    dta 0,'ADVAL not supported',0
+
 .endp
 
 ; ----------------------------------------------------------------------------
 
 .proc OS_CLI
-    rts                 ; implement *DIR
+    brk
+    dta 0,'OSCLI',0
 .endp
 
 ; ----------------------------------------------------------------------------
@@ -657,8 +664,8 @@ default_report:
     bne @+
     iny
 @:
-    stx getkey.jsr_getkey+1     ; store
-    sty getkey.jsr_getkey+2
+    stx getkey.vector           ; store
+    sty getkey.vector+1
 
     mva #0 NMIEN                ; disable NMI
     sei                         ; disable IRQ
