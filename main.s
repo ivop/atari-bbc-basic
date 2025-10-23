@@ -294,6 +294,21 @@ old_vector = * + 1
 ; MOS TRANSLATION LAYER
 ;
 
+; CIO Channels
+;   #0      Reserved, always opened by E:
+;   #1-#5   Used for file handles
+;   #6      Opened by S: for graphical modes
+;   #7      Internal use, LOAD, SAVE, DIR
+
+; Channels / file handles #1-#5
+;  0 - free
+; !0 - in-use
+
+channels:
+    dta 0,0,0,0,0
+
+; ----------------------------------------------------------------------------
+
 .proc OSFIND
     jmp *
     ; A=0, close handle in Y, Y=0, close all handles
@@ -668,7 +683,7 @@ exit:
     beq do_stardir
 
     brk
-    dta 0,'Unknown OSCLI',0
+    dta 0,'Invalid OSCLI',0
 
 stardos:
     dta '*DOS',$0d
@@ -681,7 +696,33 @@ do_stardos:
     jmp (DOSVEC)
 
 do_stardir:
-    dta 0,0,'do DIR',0
+    ldx #$70
+    jsr close_iocb
+
+    mwa #dirstardotstar IOCB7+ICBAL
+    mva #6 IOCB7+ICAX1
+    mva #0 IOCB7+ICAX2
+    mva #COPEN IOCB7+ICCOM
+    jsr call_ciov
+    jmi cio_error
+
+@:
+    mva #CGBIN IOCB7+ICCOM
+    mwa #1 IOCB7+ICBLL
+    mwa #save_a IOCB7+ICBAL
+    jsr call_ciov
+    bmi done
+
+    lda save_a
+    jsr OSWRCH
+    jmp @-
+
+done:
+    rts
+
+dirstardotstar:
+    dta 'D:*.*',$9b
+
 .endp
 
 ; ----------------------------------------------------------------------------
@@ -740,6 +781,17 @@ default_report:
     dec PORTB
 
     mwa #default_report FAULT
+
+    ; close #1 - #5
+
+    ldx #$50
+close_all:
+    jsr close_iocb
+    txa
+    sec
+    sbc #$10
+    tax
+    bne close_all
 
     jmp $c000                   ; jump to BBC BASIC
 .endp
