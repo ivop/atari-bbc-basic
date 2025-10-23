@@ -641,9 +641,47 @@ adval:
 
 ; ----------------------------------------------------------------------------
 
+.proc strcmp
+    ldy #-1
+compare:
+    iny
+    lda (ptr),y
+    cmp (ptr2),y
+    bne exit
+    cmp #$0d
+    beq exit
+    bne compare
+exit:
+    rts
+.endp
+
 .proc OS_CLI
+    stx ptr
+    sty ptr+1
+
+    mwa #stardos ptr2
+    jsr strcmp
+    beq do_stardos
+
+    mwa #stardir ptr2
+    jsr strcmp
+    beq do_stardir
+
     brk
-    dta 0,'OSCLI',0
+    dta 0,'Unknown OSCLI',0
+
+stardos:
+    dta '*DOS',$0d
+stardir
+    dta '*DIR',$0d
+
+do_stardos:
+    inc PORTB
+    mwa reset_proc.INIDOS+1 DOSINI
+    jmp (DOSVEC)
+
+do_stardir:
+    dta 0,0,'do DIR',0
 .endp
 
 ; ----------------------------------------------------------------------------
