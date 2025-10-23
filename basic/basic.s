@@ -241,3 +241,4 @@ tknOSCLI    = $FF
         icl 'part3.s'
     .endif
 
+; vi:syntax=mads
