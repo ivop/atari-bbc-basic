@@ -6295,7 +6295,9 @@ BREKA:
     stx zpBYTESM        ; set OPT to $ff
 
     txs                 ; clear machine stack
+.if .def TARGET_ATARI
     cli                 ; Atari: added to enable hardware IRQs again
+.endif
     jmp STMT            ; Jump to execution loop
 
 ; ----------------------------------------------------------------------------
