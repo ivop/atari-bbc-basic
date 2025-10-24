@@ -6412,7 +6412,11 @@ ENVELL:
         tya            ; Y=OSWORD number
         ldx #zpWORK
         ldy #$00       ; YX => control block in zpWORK space
-        jsr OSWORD
+        .if .def TARGET_ATARI
+            jsr BEEP_ENVELOPE
+        .else
+            jsr OSWORD
+        .endif
     .endif
 
     jmp NXT         ; Return to execution loop

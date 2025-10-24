@@ -91,6 +91,10 @@ CPTXT = 9
 CGBIN = 7
 CPBIN = 11
 
+AUDF1  = $d200
+AUDC1  = $d201
+AUDCTL = $d208
+
 PORTB  = $d301
 
 NMIEN  = $d40e
@@ -1110,6 +1114,37 @@ default_report:
     dta 0, '(C)1983 Acorn', 13, 0
 
 ; ----------------------------------------------------------------------------
+
+; A=7 BEEP, A=8 ENVELOPE
+
+.proc BEEP_ENVELOPE
+    cmp #7
+    beq beep
+    rts
+
+beep:
+    lda zpWORK
+    and #3
+    asl
+    tay
+
+    lda zpWORK+4
+    asl
+    asl
+    asl
+    asl
+    sta zpWORK+4
+    lda zpWORK+6
+    and #$0f
+    ora zpWORK+4
+    sta AUDC1,y
+    lda zpWORK+2
+    sta AUDF1,y
+
+    rts
+.endp
+
+; ----------------------------------------------------------------------------
 ; ============================================================================
 ; ----------------------------------------------------------------------------
 
@@ -1149,6 +1184,7 @@ default_report:
     ora BOOT
     sta BOOT
     mva #0 COLDST
+    sta AUDCTL
     sta CRSINH
 
     mva #>$c000 RAMTOP          ; set RAMTOP
