@@ -331,6 +331,17 @@ old_vector = * + 1
 ; MOS TRANSLATION LAYER
 ;
 
+; Graphics MODES                                        MEMTOP
+;   0       40x24 text                                  $bc1f
+;
+;   7       160x80 graphics (4 colors) +  40x4 text     $afa1
+;   8       320x160 graphics (mono) + 40x4 text         $a04f
+;   15      160x160 graphics (4 colors) + 40x4 text     $a04f
+;
+;   7+16    160x96 graphics (4 colors)                  $af97
+;   8+16    320x192 graphics (mono)                     $a035
+;   15+16   160x192 graphics (4 colors)                 $a035
+
 ; CIO Channels
 ;   #0      Reserved, always opened by E:
 ;   #1-#5   Used for file handles
@@ -424,7 +435,10 @@ set_free:
 
 .proc osfind_openout
     lda #8
+    ; [[fallthrough]]
 .endp
+
+; enter with A=4 for reading, and A=8 for writing
 
 .proc osfind_open_common
     sta save_a
@@ -513,6 +527,8 @@ too_high:
 
     lda channels_ungetc_flags-1,y
     beq get_byte_from_media
+
+    ; we have an 'ungetc'd byte stored
 
     lda #0
     sta channels_ungetc_flags-1,y
@@ -833,16 +849,16 @@ buf:
     bcs eof
 
     lda channels_ungetc_flags-1,x
-    bne have_byte
+    bne have_byte                   ; we already have a byte ungetc'd
 
     txa
     tay
-    jsr OSBGET
+    jsr OSBGET                      ; try reading a byte
     bcs eof
 
-    sta channels_ungetc_data-1,x
+    sta channels_ungetc_data-1,x    ; save for when BGET is called
     lda #1
-    sta channels_ungetc_flags-1,x
+    sta channels_ungetc_flags-1,x   ; flag we have an ungetc'd byte
 
 have_byte:
     ldx #0
