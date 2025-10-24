@@ -291,6 +291,43 @@ old_vector = * + 1
 .endp
 
 ; ----------------------------------------------------------------------------
+
+.proc save_axy
+    sta save_a
+.endp
+.proc save_xy
+    stx save_x
+    sty save_y
+    rts
+.endp
+
+; ----------------------------------------------------------------------------
+
+.proc restore_axy
+    lda save_a
+.endp
+.proc restore_xy
+    ldx save_x
+    ldy save_y
+    rts
+.endp
+
+; ----------------------------------------------------------------------------
+
+.proc eol_to_atari_ptr2
+    ldy #$ff
+@:
+    iny
+    lda (ptr2),y
+    cmp #$0d            ; check for CR/EOL
+    bne @-
+
+    lda #155            ; restore Atari EOL
+    sta (ptr2),y
+    rts
+.endp
+
+; ----------------------------------------------------------------------------
 ; MOS TRANSLATION LAYER
 ;
 
@@ -304,32 +341,207 @@ old_vector = * + 1
 ;  0 - free
 ; !0 - in-use
 
-channels:
+channels_inuse:
+    dta 0,0,0,0,0
+channels_ungetc_data:
+    dta 0,0,0,0,0
+channels_ungetc_flags:
     dta 0,0,0,0,0
 
 ; ----------------------------------------------------------------------------
 ; OSFIND
 ;
+.proc handle_out_of_range
+    brk
+    dta 0,'Handle out of range',0
+.endp
+
+.proc osfind_openup_unsupported
+    brk
+    dta 0,'OPENUP unsupported',0
+.endp
+
 .proc OSFIND
-    jmp *
-    ; A=0, close handle in Y, Y=0, close all handles
-    ; A=0x40 open for input
-    ; A=0x80 open for output
-    ; A=0xc0 open for update / random access (not possible with DOS 2.5)
+    cmp #$00
+    beq osfind_close_handle
+    cmp #$40                        ; openin
+    beq osfind_openin
+    cmp #$80                        ; openout
+    beq osfind_openout
+    cmp #$c0                        ; openup not possible with DOS 2.5
+    beq osfind_openup_unsupported
+
+    brk
+    dta 0,'Unsuported OSFIND call',0
+.endp
+
+.proc osfind_close_handle
+    jsr save_axy
+    tya
+    beq close_all_handles
+
+    cpy #6
+    bcs handle_out_of_range     ; >= 6 is out of range
+
+    lda #0
+    sta channels_inuse-1,y
+    sta channels_ungetc_flags-1,y
+    tya
+    asl
+    asl
+    asl
+    asl
+    tax
+    jsr close_iocb
+    jmp restore_axy
+.endp
+
+.proc close_all_handles
+    ldx #$50
+close_all:
+    jsr close_iocb
+    txa
+    sec
+    sbc #$10
+    tax
+    bne close_all
+
+    ldy #4
+    txa
+set_free:
+    sta channels_inuse,y
+    sta channels_ungetc_flags,y
+    dey
+    bpl set_free
+
+    jmp restore_axy
+.endp
+
+.proc osfind_openin
+    lda #4
+    bne osfind_open_common
+.endp
+
+.proc osfind_openout
+    lda #8
+.endp
+
+.proc osfind_open_common
+    sta save_a
+    jsr save_xy
+
+    stx ptr2
+    sty ptr2+1
+
+    jsr eol_to_atari_ptr2
+
+    ldx #0
+@:
+    lda channels_inuse,x
+    beq channel_found
+    inx
+    cpx #5
+    beq error
+    bne @-
+
+channel_found:
+    stx ptr
+    inx
+    txa
+    asl
+    asl
+    asl
+    asl
+    tax
+    mwa ptr2 IOCB0+ICBAL,x            ; filename
+    mva save_a IOCB0+ICAX1,x
+    mva #0 IOCB0+ICAX2,x
+    mva #COPEN IOCB0+ICCOM,x
+    jsr call_ciov
+    bmi error
+
+    ldx ptr
+    lda #1
+    sta channels_inuse,x
+    inx
+    txa                             ; handle 1-5 in A
+
+    jmp restore_xy
+
+error:
+    lda #0
+    jmp restore_xy
 .endp
 
 ; ----------------------------------------------------------------------------
 ; OSBPUT
 ;
 .proc OSBPUT
-    jmp *
+    jsr save_axy
+    cpy #1
+    bcc too_low
+    cpy #6
+    bcs too_high
+
+    tya
+    asl
+    asl
+    asl
+    asl
+    tax
+
+    mva #CPBIN IOCB0+ICCOM,x
+    mwa #1 IOCB0+ICBLL,x
+    mwa #save_a IOCB0+ICBAL,x
+    jsr call_ciov
+
+too_low:                    ; docs say nothing about errors returned
+too_high:
+    jmp restore_axy
 .endp
 
 ; ----------------------------------------------------------------------------
 ; OSBGET
 ;
 .proc OSBGET
-    jmp *
+    jsr save_xy
+
+    cpy #1
+    bcc too_low
+    cpy #6
+    bcs too_high
+
+    lda channels_ungetc_flags-1,y
+    beq get_byte_from_media
+
+    lda #0
+    sta channels_ungetc_flags-1,y
+    lda channels_ungetc_data-1,y
+    clc
+    jmp restore_xy
+
+get_byte_from_media:
+    tya
+    asl
+    asl
+    asl
+    asl
+    tax
+
+    mva #CGBIN IOCB0+ICCOM,x
+    mwa #1 IOCB0+ICBLL,x
+    mwa #save_a IOCB0+ICBAL,x
+    jsr call_ciov
+    bmi eof
+
+    clc
+    jmp restore_xy
+
+eof:
+too_low:
+too_high:
+    sec
+    jmp restore_xy
 .endp
 
 ; ----------------------------------------------------------------------------
@@ -423,15 +635,7 @@ channels:
     iny
     mva (ptr),y ptr2+1
 
-    ldy #$ff
-@:
-    iny
-    lda (ptr2),y
-    cmp #$0d            ; check for CR/EOL
-    bne @-
-
-    lda #155            ; restore Atari EOL
-    sta (ptr2),y
+    jsr eol_to_atari_ptr2
 
     mwa ptr2 IOCB7+ICBAL            ; open file
     mva save_a IOCB7+ICAX1          ; open mode from save_a
@@ -471,9 +675,7 @@ channels:
 ; OSWRCH
 ;
 .proc OSWRCH
-    sta save_a
-    stx save_x
-    sty save_y
+    jsr save_axy
 
 ;    cmp #$0c
 ;    bne nocls
@@ -494,10 +696,7 @@ noeol:
     ldx #0
     jsr call_ciov
 
-    ldy save_y
-    ldx save_x
-    lda save_a
-    rts
+    jmp restore_axy
 
 buf:
     dta 0
@@ -623,9 +822,45 @@ buf:
 ; ----------------------------------------------------------------------------
 ; OSBYTE
 ;
+.proc check_eof_on_handle
+    pha
+    tya
+    pha
+
+    cpx #1
+    bcc eof
+    cpx #6
+    bcs eof
+
+    lda channels_ungetc_flags-1,x
+    bne have_byte
+
+    txa
+    tay
+    jsr OSBGET
+    bcs eof
+
+    sta channels_ungetc_data-1,x
+    lda #1
+    sta channels_ungetc_flags-1,x
+
+have_byte:
+    ldx #0
+    beq done
+eof:
+    ldx #$ff
+done:
+    pla
+    tay
+    pla
+    rts
+.endp
+
 .proc OSBYTE
     cmp #$7e
     beq set_escflg
+    cmp #$7f
+    beq check_eof_on_handle
     cmp #$80
     beq no_adval
     cmp #$81
@@ -636,6 +871,8 @@ buf:
     beq get_LOMEM
     cmp #$84
     beq get_HIMEM
+    cmp #$86
+    beq pos_vpos_notimpl
     cmp #$da
     beq vdu_queue
 
@@ -689,14 +926,14 @@ outer_loop:
 
 inner_loop:
     cmp RTCLOK+2
-    beq skip
+    beq check_key_press
 
-    adw ptr2 #2 ptr2
+    adw ptr2 #2 ptr2        ; each 50Hz tick is two 100Hz ticks
     cpw ptr2 ptr
     bcc outer_loop
     bcs exit
 
-skip:
+check_key_press:
     ldx 764
     cpx #$ff
     bne key_pressed
@@ -713,6 +950,11 @@ key_pressed:
     ldy #0
     clc
     rts
+.endp
+
+.proc pos_vpos_notimpl
+    brk
+    dta 0,'POS/VPOS not supported',0
 .endp
 
 ; ----------------------------------------------------------------------------
@@ -844,16 +1086,7 @@ default_report:
 
     mwa #default_report FAULT
 
-    ; close #1 - #5
-
-    ldx #$50
-close_all:
-    jsr close_iocb
-    txa
-    sec
-    sbc #$10
-    tax
-    bne close_all
+    jsr close_all_handles       ; close #1 - #5
 
     jmp $c000                   ; jump to BBC BASIC
 .endp
