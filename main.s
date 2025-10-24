@@ -879,9 +879,7 @@ done:
     jmp *
 .endp
 
-    ; $7f   check EOF on file handle
     ; $85   read bottom of display mem if given mode was selected
-    ; $86   read POS and VPOS
 
 .proc set_escflg
     sta ESCFLG
