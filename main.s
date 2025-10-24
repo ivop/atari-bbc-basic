@@ -94,6 +94,7 @@ CPBIN = 11
 AUDF1  = $d200
 AUDC1  = $d201
 AUDCTL = $d208
+SKCTL  = $d20f
 
 PORTB  = $d301
 
@@ -1124,7 +1125,7 @@ default_report:
 
 beep:
     lda zpWORK
-    and #3
+    and #%0001011          ; allow +8 for stereo pokey
     asl
     tay
 
@@ -1186,6 +1187,7 @@ beep:
     mva #0 COLDST
     sta AUDCTL
     sta CRSINH
+    mva #3 SKCTL+$10
 
     mva #>$c000 RAMTOP          ; set RAMTOP
     lsr
