@@ -27,6 +27,22 @@ BRKKY  = $0236
 
 COLDST = $0244
 
+PADDL0 = $0270
+PADDL1 = $0271
+PADDL2 = $0272
+PADDL3 = $0273
+
+STICK0 = $0278
+STICK1 = $0278
+
+PTRIG0 = $027c
+PTRIG1 = $027d
+PTRIG2 = $027e
+PTRIG3 = $027f
+
+STRIG0 = $0284
+STRIG1 = $0285
+
 COLOR0 = $02c4
 COLOR1 = $02c5
 COLOR2 = $02c6
@@ -37,8 +53,8 @@ _MEMTOP = $02e5
 _MEMLO  = $02e7
 
 CRSINH = $02f0
-
 CHBAS  = $02f4
+CHCH   = $02fc
 
 IOCB0  = $0340
 IOCB1  = $0350
@@ -483,9 +499,7 @@ error:
 ;
 .proc OSBPUT
     jsr save_axy
-    cpy #1
-    bcc too_low
-    cpy #6
+    cpy #7              ; we allow BPUT #0 and BPUT #6
     bcs too_high
 
     tya
@@ -921,7 +935,7 @@ done:
     cmp #$7f
     beq check_eof_on_handle
     cmp #$80
-    beq no_adval
+    beq do_adval
     cmp #$81
     beq read_key_with_timeout
     cmp #$82
@@ -967,9 +981,23 @@ done:
     rts
 .endp
 
-.proc no_adval
-    brk
-    dta 0,'ADVAL not supported',0
+.proc do_adval
+    cpx #$ff
+    beq keyboard
+    bne retzero
+
+keyboard:
+    cpx CHCH
+    beq retzero
+
+    ldx #1
+    bne rety
+
+retzero:
+    ldx #0
+rety:
+    ldy #0
+    rts
 .endp
 
 .proc read_key_with_timeout
@@ -991,7 +1019,7 @@ inner_loop:
     bcs exit
 
 check_key_press:
-    ldx 764
+    ldx CHCH
     cpx #$ff
     bne key_pressed
     beq inner_loop
