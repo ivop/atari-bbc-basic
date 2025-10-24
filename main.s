@@ -331,17 +331,6 @@ old_vector = * + 1
 ; MOS TRANSLATION LAYER
 ;
 
-; Graphics MODES                                        MEMTOP
-;   0       40x24 text                                  $bc1f
-;
-;   7       160x80 graphics (4 colors) +  40x4 text     $afa1
-;   8       320x160 graphics (mono) + 40x4 text         $a04f
-;   15      160x160 graphics (4 colors) + 40x4 text     $a04f
-;
-;   7+16    160x96 graphics (4 colors)                  $af97
-;   8+16    320x192 graphics (mono)                     $a035
-;   15+16   160x192 graphics (4 colors)                 $a035
-
 ; CIO Channels
 ;   #0      Reserved, always opened by E:
 ;   #1-#5   Used for file handles
@@ -838,6 +827,58 @@ buf:
 ; ----------------------------------------------------------------------------
 ; OSBYTE
 ;
+; Graphics MODES                                        MEMTOP
+;   0       40x24 text                                  $bc1f
+;
+;   7       160x80 graphics (4 colors) +  40x4 text     $afa1
+;   8       320x160 graphics (mono) + 40x4 text         $a04f
+;   15      160x160 graphics (4 colors) + 40x4 text     $a04f
+;
+;   7+16    160x96 graphics (4 colors)                  $af97
+;   8+16    320x192 graphics (mono)                     $a035
+;   15+16   160x192 graphics (4 colors)                 $a035
+
+.proc bottom_of_screen_mode_X
+    cpx #7
+    beq gr7
+    cpx #8
+    beq gr8gr15
+    cpx #15
+    beq gr8gr15
+
+    cpx #7+16
+    beq gr7_16
+    cpx #8+16
+    beq gr8gr15_16
+    cpx #15+16
+    beq gr8gr15_16
+
+gr0:
+    ldx #<$bc1f
+    ldy #>$bc1f
+    rts
+
+gr7:
+    ldx #<$afa1
+    ldy #>$afa1
+    rts
+
+gr8gr15:
+    ldx #<$a04f
+    ldy #>$a04f
+    rts
+
+gr7_16:
+    ldx #<$af97
+    ldy #>$af97
+    rts
+
+gr8gr15_16:
+    ldx #<$a035
+    ldy #>$a035
+    rts
+.endp
+
 .proc check_eof_on_handle
     pha
     tya
@@ -887,6 +928,8 @@ done:
     beq get_LOMEM
     cmp #$84
     beq get_HIMEM
+    cmp #$85
+    beq bottom_of_screen_mode_X
     cmp #$86
     beq pos_vpos_notimpl
     cmp #$da
@@ -894,8 +937,6 @@ done:
 
     jmp *
 .endp
-
-    ; $85   read bottom of display mem if given mode was selected
 
 .proc set_escflg
     sta ESCFLG
