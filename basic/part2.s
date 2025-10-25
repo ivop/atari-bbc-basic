@@ -715,9 +715,17 @@ GRAPH:
     jsr INCMEX         ; Step past comma, evaluate integer
     jsr AEDONE         ; Update program pointer, check for end of statement
 
+.if .def TARGET_ATARI
+    pla
+    sta zpIACC+1
+    lda #$12
+    pha
+    jmp SENTWO
+.else
     lda #$12
     jsr OSWRCH         ; Send VDU 18 for GCOL
     jmp SENTWO         ; Jump to send two bytes to OSWRCH
+.endif
 
 ; ----------------------------------------------------------------------------
 
@@ -791,7 +799,7 @@ MODEGO:
 SENTWO:
     pla
 .if .def TARGET_ATARI
-    jsr graphics
+    jsr sendtwo_intercept
 .else
     jsr OSWRCH        ; Send stacked byte to OSWRCH
     jsr WRIACC        ; Print byte in IACC

@@ -18,6 +18,7 @@ RTCLOK = $12
 ROWCRS = $54
 COLCRS = $55
 RAMTOP = $6a
+COLOR  = $C8
 
 VDSLST = $0200
 VBREAK = $0206
@@ -33,7 +34,7 @@ PADDL2 = $0272
 PADDL3 = $0273
 
 STICK0 = $0278
-STICK1 = $0278
+STICK1 = $0279
 
 PTRIG0 = $027c
 PTRIG1 = $027d
@@ -1142,10 +1143,18 @@ beep:
 
 ; ----------------------------------------------------------------------------
 
-; MODE --> GRAPHICS
-; numeric in IACC
+; A=$16 MODE        IACC=number
+; A=$12 GCOL        IACC=2nd number    IACC+1=1st number
+; A=$11 COLOUR      IACC=number
 
-.proc graphics
+.proc sendtwo_intercept
+    cmp #$16
+    beq mode
+    cmp #$11
+    beq colour
+    bne setcolor
+
+mode:
     ldx #$60
     jsr close_iocb
 
@@ -1161,6 +1170,25 @@ beep:
     mva #COPEN IOCB6+ICCOM
     jsr call_ciov
     mva #>FONT CHBAS
+    rts
+
+colour:
+    lda zpIACC
+    sta COLOR
+    rts
+
+; GCOL acts like SETCOLOR. 1st argument is 0-4, 2nd argument is value &00-&ff
+
+setcolor:
+    lda zpIACC+1
+    cmp #5
+    bcs ret
+
+    tax
+    lda zpIACC
+    sta COLOR0,x
+
+ret:
     rts
 .endp
 
