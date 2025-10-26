@@ -144,7 +144,7 @@ color  = $e8
 ; BBC Micro font with Atari control characters
 
 FONT:
-    icl 'font.s'
+    ins 'font.fnt'
 
 ; ----------------------------------------------------------------------------
 
