@@ -18,7 +18,6 @@ RTCLOK = $12
 ROWCRS = $54
 COLCRS = $55
 RAMTOP = $6a
-COLOR  = $C8
 
 VDSLST = $0200
 VBREAK = $0206
@@ -55,6 +54,7 @@ _MEMLO  = $02e7
 
 CRSINH = $02f0
 CHBAS  = $02f4
+ATACHR = $02fb
 CHCH   = $02fc
 
 IOCB0  = $0340
@@ -91,6 +91,7 @@ CGTXT = 5
 CPTXT = 9
 CGBIN = 7
 CPBIN = 11
+CDRAW = 17
 
 AUDF1  = $d200
 AUDC1  = $d201
@@ -130,6 +131,7 @@ save_a = $e4
 save_x = $e5
 save_y = $e6
 irq_a = $e7
+color = $e8
 
 ; ----------------------------------------------------------------------------
 
@@ -285,6 +287,7 @@ INIDOS:
     mva #$fe PORTB
     mwa #$3c00 _MEMLO
     mwa #irq_break_key BRKKY
+    mva #1 plot_needed
 
     jmp $c000
 .endp
@@ -849,17 +852,6 @@ buf:
 ; ----------------------------------------------------------------------------
 ; OSBYTE
 ;
-; Graphics MODES                                        MEMTOP
-;   0       40x24 text                                  $bc1f
-;
-;   7       160x80 graphics (4 colors) +  40x4 text     $afa1
-;   8       320x160 graphics (mono) + 40x4 text         $a04f
-;   15      160x160 graphics (4 colors) + 40x4 text     $a04f
-;
-;   7+16    160x96 graphics (4 colors)                  $af97
-;   8+16    320x192 graphics (mono)                     $a035
-;   15+16   160x192 graphics (4 colors)                 $a035
-
     .macro memtops
         dta :1$bc1f, :1$bd5d, :1$be57, :1$be4d      ;  0-3
         dta :1$bd49, :1$bb69, :1$b781, :1$afa1      ;  4-7
@@ -1170,11 +1162,11 @@ mode:
     mva #COPEN IOCB6+ICCOM
     jsr call_ciov
     mva #>FONT CHBAS
+    mva #1 plot_needed
     rts
 
 colour:
-    lda zpIACC
-    sta COLOR
+    mva zpIACC COLOR
     rts
 
 ; GCOL acts like SETCOLOR. 1st argument is 0-4, 2nd argument is value &00-&ff
@@ -1194,6 +1186,64 @@ ret:
 
 sdevice:
     dta 'S:',$9b
+
+; ----------------------------------------------------------------------------
+
+; A = PLOT action, zpWORK+0/1 first coordinate, zpIACC+0/1 second coordinate
+;
+;      PLOT action, xcoor, ycoor
+; A=4  MOVE         xcoor, ycoor
+; A=5  DRAW         xcoor, ycoor
+; A=69 PLOT         xcoor, ycoor
+
+.proc plot_intercept
+    cmp #4
+    beq position
+    cmp #5
+    beq drawto
+    cmp #69
+    beq plot_point
+
+    brk
+    dta 0,'PLOT action unsupported',0
+.endp
+
+.proc position
+    mwa zpWORK COLCRS
+    mva zpIACC ROWCRS
+    mva #1 plot_needed
+    rts
+.endp
+
+.proc plot_point
+    jsr position
+skip_position:
+    ldx #$60
+    mva #CPBIN IOCB6+ICCOM
+    mwa #0 IOCB6+ICBLL
+    lda COLOR
+    jsr call_ciov
+    rts
+.endp
+
+.proc drawto
+    lda plot_needed
+    beq continue_drawto
+
+    jsr plot_point.skip_position
+    mva #0 plot_needed
+
+continue_drawto:
+    jsr position
+    ldx #$60
+    mva #CDRAW IOCB6+ICCOM
+    mwa #12 IOCB6+ICAX1
+    jsr call_ciov
+    rts
+.endp
+
+plot_needed:
+    dta 1
 
 ; ----------------------------------------------------------------------------
 ; ============================================================================

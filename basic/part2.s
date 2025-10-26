@@ -844,9 +844,17 @@ PLOTER:
     jsr INCMEX        ; Step past command and evaluate integer
     jsr AEDONE        ; Update program pointer, check for end of statement
 
+.if .not .def TARGET_ATARI
     lda #$19
     jsr OSWRCH        ; Send VDU 25 for PLOT
+.endif
 
+.if .def TARGET_ATARI
+    jsr POPWRK
+    pla
+    jsr plot_intercept
+
+.else
     pla
     jsr OSWRCH        ; Send PLOT action
     jsr POPWRK        ; Pop integer to temporary store at $37/8
@@ -861,6 +869,7 @@ PLOTER:
 
     lda zpIACC+1
     jsr OSWRCH        ; Send IACC high byte to OSWRCH
+.endif
 
     jmp NXT           ; Jump to execution loop
 
