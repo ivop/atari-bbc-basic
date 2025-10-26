@@ -10,6 +10,8 @@
 ;
 ; ----------------------------------------------------------------------------
 
+    opt r+          ; optimize mva #0 dest
+
 BOOT   = $09
 DOSVEC = $0a
 DOSINI = $0c
@@ -740,6 +742,33 @@ buf:
     dta 0,'Unsupported OSWORD call', 0
 .endp
 
+.proc locate_pixel
+    stx ptr
+    sty ptr+1
+    ldy #0
+    mva (ptr),y COLCRS
+    iny
+    mva (ptr),y COLCRS+1
+    iny
+    mva (ptr),y ROWCRS
+    iny
+    iny
+    tya
+    pha
+
+    ldx #$60
+    mva #CGBIN IOCB6+ICCOM
+    mwa #1 IOCB6+ICBLL
+    mwa #save_a IOCB6+ICBAL
+    jsr call_ciov
+
+    pla
+    tay
+    lda save_a
+    sta (ptr),y
+    rts
+.endp
+
 .proc OSWORD
     cmp #$00
     beq read_line
@@ -747,10 +776,10 @@ buf:
     beq get_clock_in_cs
     cmp #$02
     beq set_clock
+    cmp #$09
+    beq locate_pixel
     bne osword_error
 .endp
-
-    ; $09   read pixel value   (LOCATE)
 
 .proc read_line
     stx ptr
@@ -1221,6 +1250,7 @@ skip_position:
     ldx #$60
     mva #CPBIN IOCB6+ICCOM
     mwa #0 IOCB6+ICBLL
+    mva #0 plot_needed
     lda COLOR
     jsr call_ciov
     rts
@@ -1231,7 +1261,6 @@ skip_position:
     beq continue_drawto
 
     jsr plot_point.skip_position
-    mva #0 plot_needed
 
 continue_drawto:
     jsr position
