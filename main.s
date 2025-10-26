@@ -290,6 +290,7 @@ INIDOS:
     mwa #$3c00 _MEMLO
     mwa #irq_break_key BRKKY
     mva #1 plot_needed
+    mva #0 ESCFLG
 
     jmp $c000
 .endp
