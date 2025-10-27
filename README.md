@@ -24,7 +24,7 @@ See the **memory map** below for details.
 
 To enter BASIC programs, the usual Atari E: (Editor) device driver is used for keyboard input and screen output.
 So unlike the BBC, you don't need a separate editor to comfortably edit you programs.
-You can use the cursor keys to move around, make changes, and press RETURN to commit the changes.
+You can use the cursor keys to move around, make changes, insert and delete characters, and press RETURN to commit the changes.
 It correctly distinguishes between logical and physical lines, just like Atari BASIC, unless you use ```WIDTH``` to change the terminal width to something other than 0.
 **Don't do that**, as the editor won't know where a logical line starts or ends anymore.
 If you want different left or right margins, poke the appropriate Atari OS memory locations (LMARGN and RMARGN).
@@ -161,4 +161,5 @@ The reason for this is that with the Atari character set a statement like ```PRI
 
 ![](images/thefont.png)
 
-Note that the spades and diamonds characters are missing. Instead we have the pound sign and curly braces. If you really, really, really, need the original Atari font, you can easily copy it from ROM to &2000 with a small inline assembly routine. Or you can only redefine a specific subset of the (control) characters to your needs.
+Note that the spades and diamonds characters are missing. Instead we have the pound sign and curly braces. If you really, really, really, need the original Atari font, you can easily copy it from ROM (&E000) to &2000 with a small inline assembly routine. Or you can only redefine a specific subset of the (control) characters to your needs.
+To temporarily enable the OS ROM, you can use ```INC &D301```. Make sure to disable it again with ```DEC &D301``` before returning to BASIC, otherwise your computer will hang.
