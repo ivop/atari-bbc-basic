@@ -1161,13 +1161,15 @@ stardos:
     dta '*DOS',$0d
 stardir
     dta '*DIR',$0d
+.endp
 
-do_stardos:
+.proc do_stardos
     inc PORTB
     mwa reset_proc.INIDOS+1 DOSINI
     jmp (DOSVEC)
+.endp
 
-do_stardir:
+.proc do_stardir
     ldx #$70
     jsr close_iocb
 
@@ -1197,7 +1199,6 @@ done:
 
 dirstardotstar:
     dta 'D:*.*',$9b
-
 .endp
 
 ; ----------------------------------------------------------------------------
