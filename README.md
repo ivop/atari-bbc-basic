@@ -98,9 +98,12 @@ So ```ESC SHIFT-CLEAR``` is '}', and ```ESC BACKSPACE``` is '~'.
 
 ## Memory Map
 
+Here's the memory layout when BBC BASIC is running:
+
 | Range | RAM | ROM | Other |
 | --- | --- | --- | --- |
-| &D800 - &FFFF | BBC BASIC | Atari OS | |
+| &FFFA - &FFFF | CPU Vectors | | |
+| &D800 - &FFF9 | BBC BASIC | Atari OS | |
 | &D000 - &D7FF | | | Hardware Registers |
 | &C000 - &CFFF | BBC BASIC | Atari OS | |
 | HIMEM - &CFFF | Screen Memory | | |
