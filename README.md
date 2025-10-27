@@ -172,7 +172,7 @@ Clone the repositor, and type ```make```.
 
 ## Credits
 
-BBC BASIC Atari Port is Copyright © 2025 by Ivo van Poorten  
+The BBC BASIC Atari Port is Copyright © 2025 by Ivo van Poorten  
 BBC BASIC is Copyright © 1983 by Acorn and Sophie Wilson  
 Parts of the loader are based on Turbo Basic 1.5, Copyright © 1985 by Frank Ostrowski  
 Credits for the BBC BASIC II/III disassembly are at the [bbc-basic](https://github.com/ivop/bbc-basic) github repository.
