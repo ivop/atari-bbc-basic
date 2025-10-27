@@ -139,3 +139,7 @@ And with ANTIC DMA disabled:
 
 Which, considering there are still cycles stolen by the RAM refresh circuitry, is pretty close to 1.8MHz.
 During normal operation, with the screen on, it runs at around 60% of the speed of a BBC Model B.
+
+Note that on an NTSC machine, the timings are off. The BBC BASIC ```TIME``` variable counts 100Hz ticks on a PAL machine, but 120Hz ticks on an NTSC machine.
+It's similar to how an RTCLOK jiffy in Atari BASIC is 1/50th of a second or 1/60th of a second, depending on where you run it.
+Be sure to take this into account if you use the TIME variable to meassure the speed of your code.
