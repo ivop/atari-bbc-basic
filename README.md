@@ -23,8 +23,8 @@ See the **memory map** below for details.
 To enter BASIC programs, the usual Atari E: (Editor) device driver is used for keyboard input and screen output.
 So unlike the BBC, you don't need a separate editor to comforably edit you programs.
 You can use the cursor keys to move around, make changes, and press RETURN to commit the changes.
-It correctly distinguishes between logical and physical lines, just like Atari BASIC, unless you change the WIDTH to something other than 0.
-Don't do that, as the editor won't know where a logical line starts or ends anymore.
+It correctly distinguishes between logical and physical lines, just like Atari BASIC, unless you use ```WIDTH``` to change the terminal width to something other than 0.
+**Don't do that**, as the editor won't know where a logical line starts or ends anymore.
 If you want different left or right margins, poke the appropriate Atari OS memory locations (LMARGN and RMARGN).
 
 ## Differences
@@ -95,3 +95,31 @@ value, or you might want the '}' character somewhere in a string.
 To type them, you need to press ESC first to have the actual character show because originally on the Atari they had a special meaning
 (e.g. clear screen) and BBC BASIC's keyboard input is done through the standard E:ditor device driver.
 So ```ESC SHIFT-CLEAR``` is '}', and ```ESC BACKSPACE``` is '~'.
+
+## Memory Map
+
+| Range | RAM | ROM | Other |
+| --- | --- | --- | --- |
+| &D800 - &FFFF | BBC BASIC | Atari OS | |
+| &D000 - &D7FF | | | Hardware Registers |
+| &C000 - &CFFF | BBC BASIC | Atari OS | |
+| HIMEM - &CFFF | Screen Memory | | |
+| | | | |
+| PAGE - HIMEM | **Free** (ca. 32kB in MODE 0) | | |
+| | | | |
+| &3800 - &3BFF | BBC BASIC Workspace | | |
+| &3000 - &37FF | BBC BASIC | | |
+| &2FB9 - &2FFF | MOS Vectors | | |
+| &2400 - &2FB8 | MOS Translation Layer | | |
+| &2000 - &23FF | BBC Font | | |
+| | | | |
+| &0700 - &1FFF | Atari DOS | | |
+| &0600 - &06FF | **Free** (page six) | | |
+| &0200 - &05FF | Atari OS Variables | | |
+| &0100 - &01FF | 6502 Stack | | |
+| | | | |
+| &00FD - &00FF | MOS Variables | | |
+| &00D9 - &00FC | **Free** | | |
+| &00D0 - &00D8 | Translation Layer Variables | | |
+| &0080 - &00CF | BBC BASIC Variables | | |
+| &0000 - &007F | Atari OS Variables | | |
