@@ -120,22 +120,22 @@ IRQ_VECTOR = $fffe
 
 ; Load temporary ZP locations
 
-start_addr = $e0
-end_addr   = $e2
-bufp       = $e4
-tmp1       = $e6
+start_addr = $d0
+end_addr   = $d2
+bufp       = $d4
+tmp1       = $d6
 
 ; ----------------------------------------------------------------------------
 
 ; MOS Translation Layer ZP locations
 
-ptr    = $e0
-ptr2   = $e2
-save_a = $e4
-save_x = $e5
-save_y = $e6
-irq_a  = $e7
-color  = $e8
+ptr    = $d0
+ptr2   = $d2
+save_a = $d4
+save_x = $d5
+save_y = $d6
+irq_a  = $d7
+color  = $d8
 
 ; ----------------------------------------------------------------------------
 

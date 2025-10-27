@@ -1,7 +1,7 @@
 
-BBC BASIC ZP:  $80-$df, $fd-$ff
+BBC BASIC ZP:  $80-$cf, $fd-$ff
 
-Translation layer ZP: $e0-$e8
+Translation layer ZP: $d0-$d8
 
 $2000 - $23ff   ; BBC font with Atari control characters
 
