@@ -137,4 +137,5 @@ With ANTIC DMA enabled:
 And with ANTIC DMA disabled:  
 ![](images/clocksp-antic-off.png)
 
-Which, considering there's are still cycles stolen by the RAM refresh circuitry, is pretty close to 1.8MHz.
+Which, considering there are still cycles stolen by the RAM refresh circuitry, is pretty close to 1.8MHz.
+During normal operation, with the screen on, it runs at around 60% of the speed of a BBC Model B.
