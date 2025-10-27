@@ -21,7 +21,7 @@ See the **memory map** below for details.
 ## Screen Editor
 
 To enter BASIC programs, the usual Atari E: (Editor) device driver is used for keyboard input and screen output.
-So unlike the BBC, you don't need a separate editor to comforably edit you programs.
+So unlike the BBC, you don't need a separate editor to comfortably edit you programs.
 You can use the cursor keys to move around, make changes, and press RETURN to commit the changes.
 It correctly distinguishes between logical and physical lines, just like Atari BASIC, unless you use ```WIDTH``` to change the terminal width to something other than 0.
 **Don't do that**, as the editor won't know where a logical line starts or ends anymore.
