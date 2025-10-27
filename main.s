@@ -729,25 +729,31 @@ too_high:
 ; ----------------------------------------------------------------------------
 ; OSWRCH
 ;
+.proc print_esc
+    pha
+    lda #27
+    jsr putchar
+    pla
+    rts
+.endp
+
 .proc __OSWRCH
     jsr save_axy
 
+    cmp #27
+    bcc noesc
+    cmp #32
+    bcc do_esc
+
+noesc:
     cmp #125
-    bne no125
+    bcc noesc2
+    beq do_esc
 
-    lda #27
-    jsr putchar
-    lda #125
+do_esc:
+    jsr print_esc
 
-no125:
-    cmp #126
-    bne no126
-
-    lda #27
-    jsr putchar
-    lda #126
-
-no126:
+noesc2:
     cmp #$0d
     bne noeol
 
