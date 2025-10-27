@@ -27,7 +27,7 @@ So unlike the BBC, you don't need a separate editor to comfortably edit you prog
 You can use the cursor keys to move around, make changes, insert and delete characters, and press RETURN to commit the changes.
 It correctly distinguishes between logical and physical lines, just like Atari BASIC, unless you use ```WIDTH``` to change the terminal width to something other than 0.
 **Don't do that**, as the editor won't know where a logical line starts or ends anymore.
-If you want different left or right margins, poke the appropriate Atari OS memory locations (LMARGN and RMARGN).
+If you want different left or right margins, poke the appropriate Atari OS memory locations (LMARGN with ```?&52=0``` and RMARGN with ```?&53=30```).
 
 ## Differences
 
