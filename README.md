@@ -168,7 +168,7 @@ To temporarily enable the OS ROM, you can use ```INC &D301```. Make sure to disa
 
 To build from source you'll need the [Mad-Assembler](https://github.com/tebe6502/Mad-Assembler).
 To create the ATR disk image you'll need [atari-tools](https://github.com/jhallen/atari-tools).
-Clone the repositor, and type ```make```.
+Clone the repository, and type ```make```.
 
 ## Credits
 
