@@ -134,7 +134,7 @@ Among the sample programs is ```CLOCKSP.BBC```. Here are the results compared to
 With ANTIC DMA enabled:  
 ![](images/clocksp.png)
 
-And with ANTIC DMA disabled:
+And with ANTIC DMA disabled:  
 ![](images/clocksp-antic-off.png)
 
 Which, considering there's are still cycles stolen by the RAM refresh circuitry, is pretty close to 1.8MHz.
