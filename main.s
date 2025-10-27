@@ -544,21 +544,32 @@ error:
     cpy #7              ; we allow BPUT #0 and BPUT #6
     bcs too_high
 
-    tya
+    lda #CPBIN
+    jsr bput_bget_common
+
+too_low:                    ; docs say nothing about errors returned
+too_high:
+    jmp restore_axy
+.endp
+
+; ----------------------------------------------------------------------------
+
+.proc bput_bget_common
+    pha
+
+    tya                                 ; convert handle to CIO index in X
     asl
     asl
     asl
     asl
     tax
 
-    mva #CPBIN IOCB0+ICCOM,x
-    mwa #1 IOCB0+ICBLL,x
-    mwa #save_a IOCB0+ICBAL,x
+    pla
+    sta IOCB0+ICCOM,x
+    mwa #1 IOCB0+ICBLL,x                ; get 1 byte
+    mwa #save_a IOCB0+ICBAL,x           ; into save_a
     jsr call_ciov
-
-too_low:                    ; docs say nothing about errors returned
-too_high:
-    jmp restore_axy
+    rts
 .endp
 
 ; ----------------------------------------------------------------------------
@@ -587,17 +598,9 @@ too_high:
     jmp restore_xy
 
 get_byte_from_media:
-    tya                                 ; convert handle to CIO index in X
-    asl
-    asl
-    asl
-    asl
-    tax
+    lda #CGBIN
+    jsr bput_bget_common
 
-    mva #CGBIN IOCB0+ICCOM,x
-    mwa #1 IOCB0+ICBLL,x                ; get 1 byte
-    mwa #save_a IOCB0+ICBAL,x           ; into save_a
-    jsr call_ciov
     bmi eof
 
     lda save_a                          ; return our byte read
