@@ -24,10 +24,10 @@ See the **memory map** below for details.
 
 To enter BASIC programs, the usual Atari E: (Editor) device driver is used for keyboard input and screen output.
 So unlike the BBC, you don't need a separate editor to comfortably edit you programs.
-You can use the cursor keys to move around, make changes, and press RETURN to commit the changes.
+You can use the cursor keys to move around, make changes, insert and delete characters, and press RETURN to commit the changes.
 It correctly distinguishes between logical and physical lines, just like Atari BASIC, unless you use ```WIDTH``` to change the terminal width to something other than 0.
 **Don't do that**, as the editor won't know where a logical line starts or ends anymore.
-If you want different left or right margins, poke the appropriate Atari OS memory locations (LMARGN and RMARGN).
+If you want different left or right margins, poke the appropriate Atari OS memory locations (LMARGN with ```?&52=0``` and RMARGN with ```?&53=30```).
 
 ## Differences
 
@@ -95,7 +95,8 @@ OSCLI  = &2FF7
 All Atari control characters (```CHR$0``` to ```CHR$31```) can be printed, _except_ for ```CHR$13``` (&0D) which is the end-of-line character (CR, carriage return).
 It was not possible to change this to the Atari equivalent 155 (&9b) because that would clash with tknCOS (the internal token value for the COS function call).
 Internally BBC BASIC sometimes scans a tokenized line and stops when it encounters the EOL character (&0D). This would fail if EOL and tknCOS are
-the same value. If you really need the 'overscore' character, you can either poke &4D directly into the screen memory, or bypass OSWRCH and write to CIO channel #0 directly.
+the same value. If you really need the 'overscore' character, you can either poke &4D directly into the screen memory, bypass OSWRCH and write to CIO channel #0 directly,
+or redefine an otherwise unused character in the font (see **memory map** for details).
 
 ## Typing special characters
 
@@ -111,7 +112,7 @@ Here's the memory layout when BBC BASIC is running:
 
 | Range | RAM | ROM | Other |
 | --- | --- | --- | --- |
-| &FFFA - &FFFF | CPU Vectors | | |
+| &FFFA - &FFFF | CPU Vectors | Atari OS | |
 | &D800 - &FFF9 | BBC BASIC | Atari OS | |
 | &D000 - &D7FF | | | Hardware Registers |
 | &C000 - &CFFF | BBC BASIC | Atari OS | |
@@ -152,3 +153,13 @@ During normal operation, with the screen on, it runs at around 60% of the speed 
 Note that on an NTSC machine, the timings are off. The BBC BASIC ```TIME``` variable counts 100Hz ticks on a PAL machine, but 120Hz ticks on an NTSC machine.
 It's similar to how an RTCLOK jiffy in Atari BASIC is 1/50th of a second or 1/60th of a second, depending on where you run it.
 Be sure to take this into account if you use the TIME variable to meassure the speed of your code.
+
+## The Font
+
+BBC BASIC for the Atari uses the BBC character set for all character codes above 32 (space). The first 32 characters are the original Atari control characters.
+The reason for this is that with the Atari character set a statement like ```PRINT ~HIMEM``` would look weird. Here's an overview of the complete character set:
+
+![](images/thefont.png)
+
+Note that the spades and diamonds characters are missing. Instead we have the pound sign and curly braces. If you really, really, really, need the original Atari font, you can easily copy it from ROM (&E000) to &2000 with a small inline assembly routine. Or you can only redefine a specific subset of the (control) characters to your needs.
+To temporarily enable the OS ROM, you can use ```INC &D301```. Make sure to disable it again with ```DEC &D301``` before returning to BASIC, otherwise your computer will hang.
