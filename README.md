@@ -64,6 +64,13 @@ It's not possible to accurately emulate the BBC graphics modes. The resolutions 
 
 * ```GCOL``` acts like ```SETCOLOR``` in Atari BASIC, but takes two arguments. The color number 0-4, and what value to set it to (&00-&ff). For example, setting the color of playfield 2 to red is ```GCOL 2,&34```.
 
+### OSCLI Commands
+
+The following OSCLI commands are implemented:
+
+* ```*DOS``` - Exit BBC BASIC and return to DOS.
+* ```*DIR``` - Show a directory listing.
+
 ## MOS Vectors
 
 Just like on the BBC, you can make MOS calls directly from inline assembly. The vectors are located in RAM page &2F instead of the usual page &FF on a BBC. Note that the order and the LSBs are identical.
