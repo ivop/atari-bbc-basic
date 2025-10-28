@@ -95,8 +95,7 @@ OSCLI  = &2FF7
 All Atari control characters (```CHR$0``` to ```CHR$31```) can be printed, _except_ for ```CHR$13``` (&0D) which is the end-of-line character (CR, carriage return).
 It was not possible to change this to the Atari equivalent 155 (&9b) because that would clash with tknCOS (the internal token value for the COS function call).
 Internally BBC BASIC sometimes scans a tokenized line and stops when it encounters the EOL character (&0D). This would fail if EOL and tknCOS are
-the same value. If you really need the 'overscore' character, you can either poke &4D directly into the screen memory, bypass OSWRCH and write to CIO channel #0 directly,
-or redefine an otherwise unused character in the font (see **memory map** for details).
+the same value. If you really need the 'overscore' character, you can either poke &4D directly into the screen memory, bypass OSWRCH and write to CIO channel #0 directly, use ```COLOUR &0D:PLOT 69,POS,VPOS```, or redefine an otherwise unused character in the font (see **memory map** for details).
 
 ## Typing special characters
 
