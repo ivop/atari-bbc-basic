@@ -170,7 +170,7 @@ FONT:
 .endp
 
 message:
-    dta 125,155,155,'BBC BASIC 3.10',155,155
+    dta 125,155,155,127,'Loading BBC BASIC 3.10',155,155
 end_message:
 
 ; ----------------------------------------------------------------------------
@@ -1432,13 +1432,12 @@ OS_CLI:     jmp __OSCLI
     lsr
     sta APPMHI+1                ; and APPMHI
 
-;    jsr open_editor
-
     dec PORTB
 
     mwa #default_report FAULT
 
-    jsr close_all_handles       ; close #1 - #5
+    mva #0 zpIACC
+    jsr sendtwo_intercept.mode  ; MODE 0
 
     jmp BASIC_ENTRY             ; jump to BBC BASIC
 .endp

@@ -15,6 +15,8 @@ bbcbasic.atr: autorun.sys
 	$(ATR) bbcbasic.atr put test/sound.bbc
 	$(ATR) bbcbasic.atr put test/mathspd.bbc
 	$(ATR) bbcbasic.atr put test/allchars.bbc
+	$(ATR) bbcbasic.atr put test/copybar.bbc
+	$(ATR) bbcbasic.atr put test/overbar.bbc
 
 autorun.sys: main.s
 	$(MADS) -l:debug.lst -o:$@ $<
