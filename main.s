@@ -702,6 +702,7 @@ too_high:
     jsr call_ciov
     bmi cio_error
 
+    jsr close_iocb
     jmp reset_pokey
 .endp
 
