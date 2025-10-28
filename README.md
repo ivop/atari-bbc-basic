@@ -168,11 +168,11 @@ To temporarily enable the OS ROM, you can use ```INC &D301```. Make sure to disa
 
 To build from source you'll need the [Mad-Assembler](https://github.com/tebe6502/Mad-Assembler).
 To create the ATR disk image you'll need [atari-tools](https://github.com/jhallen/atari-tools).
-Clone the repositor, and type ```make```.
+Clone the repository, and type ```make```.
 
 ## Credits
 
-BBC BASIC Atari Port is Copyright © 2025 by Ivo van Poorten
-BBC BASIC is Copyright © 1983 by Acorn and Sophie Wilson
-Parts of the loader are based on Turbo Basic 1.5, Copyright © 1985 by Frank Ostrowski
+The BBC BASIC Atari Port is Copyright © 2025 by Ivo van Poorten  
+BBC BASIC is Copyright © 1983 by Acorn and Sophie Wilson  
+Parts of the loader are based on Turbo Basic 1.5, Copyright © 1985 by Frank Ostrowski  
 Credits for the BBC BASIC II/III disassembly are at the [bbc-basic](https://github.com/ivop/bbc-basic) github repository.
