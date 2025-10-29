@@ -69,7 +69,7 @@ It's not possible to accurately emulate the BBC graphics modes. The resolutions 
 The following OSCLI commands are implemented:
 
 * ```*DOS``` - Exit BBC BASIC and return to DOS.
-* ```*DIR``` - Show a directory listing.
+* ```*DIR ["D:FILESPEC.EXT"]``` - Show a directory listing.
 
 ## MOS Vectors
 
