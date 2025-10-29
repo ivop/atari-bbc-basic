@@ -1155,11 +1155,65 @@ key_pressed:
 ; ----------------------------------------------------------------------------
 ; OSCLI
 ;
-; Maybe add *LOAD and *SAVE for binary files later
+; *DOS                            - return to DOS
+; *DIR ["filespec"]               - print directory listing
+; *LOAD "filename.ext" start      - load binary file into start address
+; *SAVE "filename.ext" start end  - save to binary file, including end address
 ;
-; Very simple strcmp to match *DIR and *DOS
-;
-.proc do_starload
+.proc serror
+    jmp STDED
+.endp
+
+; Parse 16-bit hexadecimal value into ZP at offset X
+
+.proc parse_hex
+    mwa #0 0,x
+    sta save_x          ; use to determine if a hex was parsed at all
+
+@:
+    lda (ptr),y
+    cmp #' '
+    beq done
+    cmp #$0d
+    beq done
+
+    cmp #'0'
+    bcc serror
+    cmp #'9'+1
+    bcc ok
+    cmp #'A'
+    bcc serror
+    cmp #'F'+1
+    bcs serror
+
+ok:
+    cmp #'A'
+    bcc noaf
+
+    ; C=1
+    sbc #'A'-'9'-1
+
+noaf:
+    and #$0f
+
+    asl 0,x
+    rol 1,x
+    asl 0,x
+    rol 1,x
+    asl 0,x
+    rol 1,x
+    asl 0,x
+    rol 1,x
+    ora 0,x
+    sta 0,x
+    inc save_x
+    iny
+    bne @-
+
+done:
+    lda save_x
+    beq serror
+
     rts
 .endp
 
@@ -1175,6 +1229,77 @@ done:
     rts
 .endp
 
+.proc do_starloadsave
+    sta save_a
+
+    jsr skip_spaces_ptr_y
+    jsr parse_ptr_string_into_stracc
+    jsr skip_spaces_ptr_y
+
+    ldx #zpIACC
+    jsr parse_hex
+
+    lda save_a
+    cmp #4
+    beq not_starsave
+
+    jsr skip_spaces_ptr_y
+
+    ldx #zpIACC+2
+    jsr parse_hex
+
+not_starsave:
+    jsr skip_spaces_ptr_y
+    lda (ptr),y
+    cmp #$0d
+    bne serror
+
+    ldx #$70
+    jsr close_iocb
+
+    mwa #STRACC IOCB7+ICBAL           ; filename
+    mva save_a IOCB7+ICAX1            ; 4 (reading) or 8 (writing)
+    mva #0 IOCB7+ICAX2
+    mva #COPEN IOCB7+ICCOM
+    jsr call_ciov
+    jmi cio_error
+
+    mwa zpIACC IOCB7+ICBAL
+    lda save_a
+    cmp #8
+    beq not_starload
+
+    mwa #65535 IOCB7+ICBLL
+    mva #CGBIN IOCB7+ICCOM
+    bne go
+
+not_starload:
+    lda zpIACC+2
+    sec
+    sbc zpIACC
+    sta IOCB7+ICBLL
+    lda zpIACC+3
+    sbc zpIACC+1
+    sta IOCB7+ICBLL+1
+
+    inw IOCB7+ICBLL
+
+    mva #CPBIN IOCB7+ICCOM
+
+go:
+    jsr call_ciov
+    bmi cerror
+
+okido:
+    jmp close_iocb
+
+cerror:
+    lda save_a
+    cmp #4
+    beq okido
+    jmp cio_error
+.endp
+
 .proc __OSCLI
     stx ptr
     sty ptr+1
@@ -1187,10 +1312,22 @@ done:
     jsr strcmp
     beq do_stardir
 
-;    mwa #starload ptr2
-;    jsr strcmp
-;    beq do_starload
+    mwa #starload ptr2
+    jsr strcmp
+    bne no_starload
 
+    lda #4
+    jmp do_starloadsave
+
+no_starload:
+    mwa #starsave ptr2
+    jsr strcmp
+    bne no_starsave
+
+    lda #8
+    jmp do_starloadsave
+
+no_starsave:
     brk
     dta 0,'Invalid OSCLI',0
 
@@ -1198,10 +1335,10 @@ stardos:
     dta '*DOS',$0d,0
 stardir:
     dta '*DIR',0
-;starload:
-;    dta '*LOAD',0
-;starsave:
-;    dta '*SAVE',0
+starload:
+    dta '*LOAD',0
+starsave:
+    dta '*SAVE',0
 .endp
 
 .proc do_stardos
@@ -1226,8 +1363,6 @@ stardir:
 
     jsr skip_spaces_ptr_y
     jsr parse_ptr_string_into_stracc
-
-    iny
     jsr match_cr
     bne syntax_error
 
@@ -1283,6 +1418,7 @@ done:
     bne @-
     beq syntax_error
 done:
+    iny
     rts
 .endp
 
