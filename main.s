@@ -1146,15 +1146,13 @@ key_pressed:
 ;
 .proc strcmp
     ldy #-1
-compare:
+@:
     iny
-    lda (ptr),y
-    cmp (ptr2),y
-    bne exit
-    cmp #$0d
-    beq exit
-    bne compare
-exit:
+    lda (ptr2),y
+    beq done
+    cmp (ptr),y
+    beq @-
+done:
     rts
 .endp
 
@@ -1168,15 +1166,36 @@ exit:
 
     mwa #stardir ptr2
     jsr strcmp
+    bne no_stardir
+
+    mwa #dirstardotstar ptr2
+
+    lda (ptr),y
+    cmp #$0d
     beq do_stardir
 
+    mwa #STRACC ptr2
+
+    jsr skip_spaces_ptr_y
+    jsr parse_ptr_string_into_stracc
+
+    iny
+    lda (ptr),y
+    cmp #$0d
+    bne syntax_error
+
+    mva #$9b STRACC,x
+
+    jmp do_stardir
+
+no_stardir:
     brk
     dta 0,'Invalid OSCLI',0
 
 stardos:
-    dta '*DOS',$0d
+    dta '*DOS',$0d,0
 stardir
-    dta '*DIR',$0d
+    dta '*DIR',0
 .endp
 
 .proc do_stardos
@@ -1185,11 +1204,15 @@ stardir
     jmp (DOSVEC)
 .endp
 
+.proc syntax_error
+    jmp STDED
+.endp
+
 .proc do_stardir
     ldx #$70
     jsr close_iocb
 
-    mwa #dirstardotstar IOCB7+ICBAL
+    mwa ptr2 IOCB7+ICBAL
     mva #6 IOCB7+ICAX1                  ; open mode 6, directory listing
     mva #0 IOCB7+ICAX2
     mva #COPEN IOCB7+ICCOM
@@ -1212,9 +1235,41 @@ stardir
 done:
     ; no close, each time #7 is used, it is closed before usage
     rts
+.endp
 
 dirstardotstar:
     dta 'D:*.*',$9b
+
+.proc skip_spaces_ptr_y
+    dey
+@:
+    iny
+    lda (ptr),y
+    cmp #' '
+    beq @-
+done:
+    rts
+.endp
+
+.proc parse_ptr_string_into_stracc
+    lda (ptr),y
+    cmp #'"'
+    bne syntax_error
+
+    ldx #0
+@:
+    iny
+    lda (ptr),y
+    cmp #'"'
+    beq done
+    cmp #$0d
+    beq syntax_error
+    sta STRACC,x
+    inx
+    bne @-
+    beq syntax_error
+done:
+    rts
 .endp
 
 ; ----------------------------------------------------------------------------
