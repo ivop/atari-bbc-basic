@@ -171,6 +171,7 @@ The reason for this is that with the Atari character set a statement like ```PRI
 
 Note that the spades and diamonds characters are missing. Instead we have the pound sign and curly braces. If you really, really, really, need the original Atari font, you can easily copy it from ROM (&E000) to &2000 with a small inline assembly routine. Or you can only redefine a specific subset of the (control) characters to your needs.
 To temporarily enable the OS ROM, you can use ```INC &D301```. Make sure to disable it again with ```DEC &D301``` before returning to BASIC, otherwise your computer will hang.
+See the example program ```COPYBAR.BBC``` for an example.
 
 ## Build from source
 
