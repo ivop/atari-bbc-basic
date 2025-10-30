@@ -70,6 +70,8 @@ The following OSCLI commands are implemented:
 
 * ```*DOS``` - Exit BBC BASIC and return to DOS.
 * ```*DIR ["D:FILESPEC.EXT"]``` - Show a directory listing.
+* ```*LOAD "D:FILENAME.EXT" <start>``` - Load binary file into memory, starting at &lt;start&gt; address.
+* ```*SAVE "D:FILENAME.EXT" <start> <end>``` - Save memory from &lt;start&gt; to &lt;end&gt; to a file.
 
 ## MOS Vectors
 
@@ -97,13 +99,20 @@ It was not possible to change this to the Atari equivalent 155 (&9b) because tha
 Internally BBC BASIC sometimes scans a tokenized line and stops when it encounters the EOL character (&0D). This would fail if EOL and tknCOS are
 the same value. If you really need the 'overscore' character, you can either poke &4D directly into the screen memory, bypass OSWRCH and write to CIO channel #0 directly, use ```COLOUR &0D:PLOT 69,POS,VPOS```, or redefine an otherwise unused character in the font (see **memory map** for details).
 
-## Typing special characters
+## Typing Special Characters
 
 BBC BASIC for the Atari uses the BBC font. Sometimes you need to type the ~ (tilde) if you want to print a hexadecimal
 value, or you might want the '}' character somewhere in a string.
 To type them, you need to press ESC first to have the actual character show because originally on the Atari they had a special meaning
 (e.g. clear screen) and BBC BASIC's keyboard input is done through the standard E:ditor device driver.
 So ```ESC SHIFT-CLEAR``` is '}', and ```ESC BACKSPACE``` is '~'.
+
+## Invers Characters
+
+You can use inverse characters inside strings, just like standard Atari BASIC. You cannot use them anywhere else, like in REM statements.
+Inverse characters have an ASCII value larger than 127. BBC BASIC will mistake them for _tokens_ and expand them. It's mostly harmless though,
+except for inverse CTRL-M (value &8D), which signals a new line number (tknCONST). This will mess up your listing. This is a known BBC BUG,
+where this could be triggered by including Teletext &8D inside a REM statement.
 
 ## Memory Map
 
@@ -162,6 +171,7 @@ The reason for this is that with the Atari character set a statement like ```PRI
 
 Note that the spades and diamonds characters are missing. Instead we have the pound sign and curly braces. If you really, really, really, need the original Atari font, you can easily copy it from ROM (&E000) to &2000 with a small inline assembly routine. Or you can only redefine a specific subset of the (control) characters to your needs.
 To temporarily enable the OS ROM, you can use ```INC &D301```. Make sure to disable it again with ```DEC &D301``` before returning to BASIC, otherwise your computer will hang.
+See the example program ```COPYBAR.BBC``` for an example.
 
 ## Build from source
 
