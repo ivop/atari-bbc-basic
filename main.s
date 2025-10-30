@@ -119,7 +119,7 @@ IRQ_VECTOR = $fffe
 
 ; ----------------------------------------------------------------------------
 
-; Load temporary ZP locations
+; Loader temporary ZP locations
 
 start_addr = $d0
 end_addr   = $d2
@@ -142,7 +142,7 @@ color  = $d8
 
     org $2000
 
-; BBC Micro font with Atari control characters
+; BBC Micro font (Atari control characters are copied from ROM by splash)
 
 FONT:
     ins 'data/font32-63.dat'
@@ -322,6 +322,8 @@ no_BRK:
     bpl @-
     rts
 .endp
+
+; ----------------------------------------------------------------------------
 
 .proc reset_proc
     mva #>FONT CHBAS            ; reset CHBAS to out BBC font
@@ -904,7 +906,7 @@ buf:
 @:
     iny
     lda (ptr2),y
-    cmp #$9b            ; Atari EOL
+    cmp #$9b                ; Atari EOL
     bne @-
 
     lda #$0d
@@ -1209,9 +1211,9 @@ ok:
     sbc #'A'-'9'-1
 
 noaf:
-    and #$0f
+    and #$0f                ; bottom nibble
 
-    asl 0,x
+    asl 0,x                 ; shift target memory locatirn left four times
     rol 1,x
     asl 0,x
     rol 1,x
@@ -1220,14 +1222,14 @@ noaf:
     asl 0,x
     rol 1,x
     ora 0,x
-    sta 0,x
+    sta 0,x                 ; store bottom nibble
     inc save_x
     iny
     bne @-
 
 done:
     lda save_x
-    beq serror
+    beq serror              ; zero digits were converted
 
     rts
 .endp
