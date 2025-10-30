@@ -18,6 +18,7 @@ bbcbasic.atr: autorun.sys
 	$(ATR) bbcbasic.atr put test/copybar.bbc
 	$(ATR) bbcbasic.atr put test/overbar.bbc
 	$(ATR) bbcbasic.atr put data/hp100lx.fnt
+	$(ATR) bbcbasic.atr put test/asm1.bbc
 
 autorun.sys: main.s
 	$(MADS) -l:debug.lst -o:$@ $<

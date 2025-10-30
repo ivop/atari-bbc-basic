@@ -311,6 +311,18 @@ no_BRK:
 
 ; ----------------------------------------------------------------------------
 
+.proc clear_channels
+    ldx #4
+    lda #0
+@:
+    sta channels_inuse,x
+    sta channels_ungetc_data,x
+    sta channels_ungetc_flags,x
+    dex
+    bpl @-
+    rts
+.endp
+
 .proc reset_proc
     mva #>FONT CHBAS            ; reset CHBAS to out BBC font
     sta CHBASE
@@ -324,6 +336,7 @@ INIDOS:
     mva #1 plot_needed          ; reset to 1 if no plot or drawto has occurred
     mva #0 ESCFLG               ; clear ESCFLG
     jsr reset_pokey
+    jsr clear_channels
 
     jmp BASIC_ENTRY
 .endp
@@ -539,6 +552,8 @@ channel_found:
     asl
     asl
     tax
+
+    jsr close_iocb
 
     mwa ptr2 IOCB0+ICBAL,x          ; filename
     mva save_a IOCB0+ICAX1,x        ; 4 (reading) or 8 (writing)
@@ -1501,6 +1516,8 @@ mode:
     sta IOCB6+ICAX2
     mva #COPEN IOCB6+ICCOM
     jsr call_ciov
+
+    jsr clear_channels              ; MODE/GRAPHICS closes all IOCBs
 
     mva #>FONT CHBAS                ; restore font after "graphics" call
     mva #1 plot_needed              ; reset flag
