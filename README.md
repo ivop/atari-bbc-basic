@@ -40,6 +40,8 @@ Instead of doing a poor BBC emulation, some of the commands work differenty than
 
 * ```ENVELOPE``` does nothing.
 
+* ```VDU``` just prints the ASCII characters corresponding to the numbers you provide. There is no VDU emulation.
+
 * You can use ```ADVAL(255)``` to check if there's a pending keypress. All other ADC values are ignored. To read joysticks, peek at the shadow registers in RAM (e.g. ```DIR=?&0278```).
 
 * OPENUP, EXT# and PTR# do not work because there's no byte accurate way to do fseek/ftell with Atari DOS 2.5.

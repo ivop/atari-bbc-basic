@@ -1325,7 +1325,23 @@ cerror:
     jsr strcmp
     beq do_stardos
 
+    mwa #starquit ptr2
+    jsr strcmp
+    beq do_stardos
+
+    mwa #starbye ptr2
+    jsr strcmp
+    beq do_stardos
+
     mwa #stardir ptr2
+    jsr strcmp
+    beq do_stardir
+
+    mwa #starcat ptr2
+    jsr strcmp
+    beq do_stardir
+
+    mwa #stardot ptr2
     jsr strcmp
     beq do_stardir
 
@@ -1347,25 +1363,11 @@ no_starload:
 no_starsave:
     mwa #starappend ptr2
     jsr strcmp
-    bne no_starappend
+    bne invalid_oscli
 
     lda #9
     jmp do_starloadsave
 
-no_starappend:
-    brk
-    dta 0,'Invalid OSCLI',0
-
-stardos:
-    dta '*DOS',$0d,0
-stardir:
-    dta '*DIR',0
-starload:
-    dta '*LOAD',0
-starsave:
-    dta '*SAVE',0
-starappend:
-    dta '*APPEND',0
 .endp
 
 .proc do_stardos
@@ -1374,10 +1376,9 @@ starappend:
     jmp (DOSVEC)
 .endp
 
-.proc match_cr
-    lda (ptr),y
-    cmp #$0d
-    rts
+.proc invalid_oscli
+    brk
+    dta 0,'Invalid OSCLI',0
 .endp
 
 .proc do_stardir
@@ -1424,6 +1425,12 @@ done:
     rts
 .endp
 
+.proc match_cr
+    lda (ptr),y
+    cmp #$0d
+    rts
+.endp
+
 .proc syntax_error
     jmp STDED
 .endp
@@ -1462,6 +1469,25 @@ done:
 
 dirstardotstar:
     dta 'D:*.*',$9b
+
+stardos:
+    dta '*DOS',$0d,0
+starquit:
+    dta '*QUIT',$0d,0
+starbye:
+    dta '*BYE',$0d,0
+starcat:
+    dta '*CAT',0
+stardot:
+    dta '*.',0
+stardir:
+    dta '*DIR',0
+starload:
+    dta '*LOAD',0
+starsave:
+    dta '*SAVE',0
+starappend:
+    dta '*APPEND',0
 
 ; ----------------------------------------------------------------------------
 
