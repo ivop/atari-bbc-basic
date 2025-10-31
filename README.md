@@ -111,7 +111,7 @@ To type them, you need to press ESC first to have the actual character show beca
 (e.g. clear screen) and BBC BASIC's keyboard input is done through the standard E:ditor device driver.
 So ```ESC SHIFT-CLEAR``` is '}', and ```ESC BACKSPACE``` is '~'.
 
-## Invers Characters
+## Inverse Characters
 
 You can use inverse characters inside strings, just like standard Atari BASIC. You cannot use them anywhere else, like in REM statements.
 Inverse characters have an ASCII value larger than 127. BBC BASIC will mistake them for _tokens_ and expand them. It's mostly harmless though,
