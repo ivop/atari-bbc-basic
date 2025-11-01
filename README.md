@@ -28,14 +28,14 @@ So unlike the BBC, you don't need a separate editor to comfortably edit you prog
 You can use the cursor keys to move around, make changes, insert and delete characters, and press RETURN to commit the changes.
 It correctly distinguishes between logical and physical lines, just like Atari BASIC, unless you use ```WIDTH``` to change the terminal width to something other than 0.
 **Don't do that**, as the editor won't know where a logical line starts or ends anymore.
-If you want different left or right margins, poke the appropriate Atari OS memory locations (LMARGN with ```?&52=0``` and RMARGN with ```?&53=30```).
+If you want different left or right margins, poke the appropriate Atari OS memory locations (e.g. LMARGN with ```?&52=0``` and RMARGN with ```?&53=30```).
 
 ## Differences
 
 The Atari is not an Acorn computer, so in order to turn BBC BASIC into a useful BASIC for the Atari, some compromises had to be made.
 Instead of doing a poor BBC emulation, some of the commands work differenty than they would on the BBC in order to make them more useful on the Atari.
 
-* The BREAK key interrupts like ESCape on the BBC. Pressing the RESET key does a coldstart, but you can recover your listing by typing ```OLD```.
+* The BREAK key interrupts like ESCape on the BBC. Pressing the RESET key does a coldstart of BASIC, but you can recover your listing by typing ```OLD```.
 
 * ```SOUND``` works like Atari BASIC, i.e. ```SOUND voice, pitch, distortion, volume```. If your Atari is equiped with a second Pokey, you can add 8 to the voice parameter to play sounds on the right channel.
 
@@ -43,13 +43,13 @@ Instead of doing a poor BBC emulation, some of the commands work differenty than
 
 * ```VDU``` just prints the ASCII characters corresponding to the numbers you provide. There is no VDU emulation.
 
-* You can use ```ADVAL(255)``` to check if there's a pending keypress. All other ADC values are ignored. To read joysticks, peek at the shadow registers in RAM (e.g. ```DIR=?&0278```).
+* You can use ```ADVAL(255)``` to check if there's a pending keypress. All other ADC values are ignored. To read joysticks, peek at the shadow registers in RAM (e.g. ```DIR=?&0278``` for stick 0).
 
 * OPENUP, EXT# and PTR# do not work because there's no byte accurate way to do fseek/ftell with Atari DOS 2.5.
 
 #### Graphics Modes
 
-It's not possible to accurately emulate the BBC graphics modes. The resolutions and the available colors are too different, so instead BBC BASIC for the Atari uses the standard OS graphics modes and its coordinate system. (0,0) is at the top-left corner, and the maximum resolution is 320x192 (MODE 8).
+It's not possible to accurately emulate the BBC graphics modes. The resolutions and the available colors are too different, so instead BBC BASIC for the Atari uses the standard Atari OS graphics modes and its coordinate system. (0,0) is at the top-left corner, and the maximum resolution is 320x192 (MODE 8).
 
 * ```MODE``` works like Atari BASIC's ```GRAPHICS```. Supported modes are 0-15. Add 16 to disable the text window at the bottom. 
 
