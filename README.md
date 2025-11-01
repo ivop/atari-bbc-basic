@@ -55,13 +55,15 @@ It's not possible to accurately emulate the BBC graphics modes. The resolutions 
 
 * ```POINT``` works like ```LOCATE```. For example ```A = POINT(42,42)``` returns the color of the pixel at position (42,42) in A.
 
-* ```PLOT action, x, y``` supports action 4 (MOVE), 5 (DRAW), and 69 (PLOT POINT). All other actions are ignored.
+* ```PLOT action, x, y``` supports action 4 (MOVE), 5 (DRAW), 69 (PLOT POINT), and 133 (FILL). All other actions are ignored.
 
 * To plot a single point, use ```PLOT 69,x,y```.
 
 * ```MOVE x,y``` is a shortcut for ```PLOT 4,x,y```. It moves the graphics cursor to location (x,y) (but does not plot a point).
 
 * ```DRAW x,y``` shortcut for ```PLOT 5,x,y```. It draws a line from the current position to (x,y) in the current drawing color.
+
+* ```PLOT 133, x, y``` calls the Atari OS flood fill. Note that this not 100% identical to 133 on the BBC, and it has the same quirks the XIO call has in Atari BASIC.
 
 * ```COLOR num``` selects the drawing color.
 

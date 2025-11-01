@@ -60,6 +60,7 @@ CRSINH = $02f0
 CHBAS  = $02f4
 ATACHR = $02fb
 CHCH   = $02fc
+FILDAT = $02fd
 
 IOCB0  = $0340
 IOCB1  = $0350
@@ -96,6 +97,7 @@ CPTXT = 9
 CGBIN = 7
 CPBIN = 11
 CDRAW = 17
+CFILL = 18
 
 AUDF1  = $d200
 AUDC1  = $d201
@@ -1587,18 +1589,22 @@ sdevice:
 
 ; A = PLOT action, zpWORK+0/1 first coordinate, zpIACC+0/1 second coordinate
 ;
-;      PLOT action, xcoor, ycoor
-; A=4  MOVE         xcoor, ycoor
-; A=5  DRAW         xcoor, ycoor
-; A=69 PLOT         xcoor, ycoor
+;       PLOT action, xcoor, ycoor
+; A=4   MOVE         xcoor, ycoor
+; A=5   DRAW         xcoor, ycoor
+; A=69  PLOT         xcoor, ycoor
+; A=133 FILL         xcoor, ycoor
 
 .proc plot_intercept
+    ldx #$60
     cmp #4
     beq position
     cmp #5
     beq drawto
     cmp #69
     beq plot_point
+    cmp #133
+    beq xio_fill
 
     brk
     dta 0,'PLOT action unsupported',0
@@ -1615,16 +1621,23 @@ sdevice:
     jsr position
 
 skip_position:
-    ldx #$60
     mva #CPBIN IOCB6+ICCOM
     mwa #0 IOCB6+ICBLL
     mva #0 plot_needed
     lda COLOR
-    jsr call_ciov
-    rts
+    jmp call_ciov
+.endp
+
+.proc xio_fill
+    lda #CFILL
+    pha
+    jmp drawto.continue_drawto
 .endp
 
 .proc drawto
+    lda #CDRAW
+    pha
+
     lda plot_needed
     beq continue_drawto
 
@@ -1632,12 +1645,14 @@ skip_position:
 
 continue_drawto:
     jsr position
-    ldx #$60
-    mva #CDRAW IOCB6+ICCOM
-    mwa #12 IOCB6+ICAX1
+
+    pla
+    sta IOCB6+ICCOM
+    mwa #0 IOCB6+ICAX1
+    sta plot_needed
     mva COLOR ATACHR
-    jsr call_ciov
-    rts
+    sta FILDAT
+    jmp call_ciov
 .endp
 
 plot_needed:
