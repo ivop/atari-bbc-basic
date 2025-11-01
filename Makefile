@@ -20,6 +20,7 @@ bbcbasic.atr: autorun.sys
 	$(ATR) bbcbasic.atr put test/asm1.bbc
 	$(ATR) bbcbasic.atr put test/owl.bbc
 	$(ATR) bbcbasic.atr put test/curve.bbc
+	$(ATR) bbcbasic.atr put test/dmscfp.bbc
 
 autorun.sys: main.s
 	$(MADS) -l:debug.lst -o:$@ $<
