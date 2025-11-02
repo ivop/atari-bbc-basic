@@ -144,11 +144,13 @@ color  = $d8
 
     org $2000
 
-; BBC Micro font (Atari control characters are copied from ROM by splash)
+; BBC Micro font (Atari control characters are later copied from ROM)
 
 FONT:
     ins 'data/font32-63.dat'
     ins 'data/font64-95.dat'
+
+    ins 'data/owl.dat'
 
     org $2300
 
@@ -176,18 +178,12 @@ FONT:
     mva #CPBIN IOCB0+ICCOM
     jsr CIOV                                    ; the OS is still on
 
-    ; copy control characters from ROM to RAM
-
-@:
-    mva $e200,x $2200,x
-    inx
-    bne @-
-
     rts
 .endp
 
 message:
-    dta 125,155,155,127,'Loading BBC BASIC 3.10',155,155
+    dta 125,155,155,127,'Loading BBC BASIC 3.10',127,0,1,2,155
+    dta 127,127,127,127,3,4,5,155,127,127,127,127,6,7,8,155
 
 message_len = * - message
 
@@ -1726,16 +1722,21 @@ OS_CLI:     jmp __OSCLI
     mva #1 BASICF               ; set flags for warm start
     ora BOOT
     sta BOOT
-    mva #0 COLDST
-    sta AUDCTL
-    sta CRSINH
-    sta zpIACC                  ; used later for MODE 0
+    mvx #0 COLDST
+    stx AUDCTL
+    stx CRSINH
+    stx zpIACC                  ; used later for MODE 0
 
     jsr reset_pokey
 
     mva #>$c000 RAMTOP          ; set RAMTOP
     lsr
     sta APPMHI+1                ; and APPMHI
+
+@:
+    mva $e200,x $2200,x         ; copy control characters from ROM to RAM
+    inx
+    bne @-
 
     dec PORTB
 
