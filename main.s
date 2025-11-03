@@ -1733,6 +1733,9 @@ OS_CLI:     jmp __OSCLI
     lsr
     sta APPMHI+1                ; and APPMHI
 
+    lda #125
+    jsr putchar
+
 @:
     mva $e200,x $2200,x         ; copy control characters from ROM to RAM
     inx
