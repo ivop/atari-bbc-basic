@@ -1733,8 +1733,12 @@ OS_CLI:     jmp __OSCLI
     lsr
     sta APPMHI+1                ; and APPMHI
 
+    dec PORTB
+
     lda #125
     jsr putchar
+
+    inc PORTB
 
 @:
     mva $e200,x $2200,x         ; copy control characters from ROM to RAM
