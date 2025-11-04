@@ -6,7 +6,7 @@ Later versions required a CMOS 65C02, and won't run on an unmodified Atari.
 
 You can download the latest release [here](https://github.com/ivop/atari-bbc-basic/releases/tag/release-20251102).
 
-![](images/report.png)
+![](images/splash.png) ![](images/report.png)
 
 The BBC BASIC dialect is described in the
 [BBC Microcomputer User Guide](http://regregex.bbcmicro.net/BPlusUserGuide-1.07.pdf).
