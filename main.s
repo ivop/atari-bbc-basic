@@ -142,21 +142,10 @@ color  = $d8
 
 ; ----------------------------------------------------------------------------
 
-    org $2000
+    org $5000
 
-; BBC Micro font (Atari control characters are later copied from ROM)
-
-FONT:
-    ins 'data/font32-63.dat'
-    ins 'data/font64-95.dat'
-
-    ins 'data/owl.dat'
-
-    org $2300
-
-    ins 'data/font96-127.dat'
-
-; ----------------------------------------------------------------------------
+SPLASH_FONT:
+    ins 'data/splash.fnt'
 
 ; Splash screen
 ; Code will be overwritten
@@ -164,7 +153,7 @@ FONT:
     org $2400
 
 .proc splash
-    mva #>FONT CHBAS                            ; set font
+    mva #>SPLASH_FONT CHBAS                     ; set font
     sta CRSINH                                  ; disable cursor
     mva #$3c _MEMLO+1
     mva #$00 _MEMLO                             ; set MEMLO
@@ -182,14 +171,38 @@ FONT:
 .endp
 
 message:
-    dta 125,155,155,127,'Loading BBC BASIC 3.10',127,0,1,2,155
-    dta 127,127,127,127,3,4,5,155,127,127,127,127,6,7,8,155
+    dta 125,155,155,155,155,155,155
+    dta 127, '!"#$%&', 39, '( )*+,-./0123 45656', 155
+    dta 127, '789:;<=> ?@ABCD*EFGH 4IJKL', 155
+    dta 127, 'MNOPQRST UVWXYZV[\]^ 4__', 0,'4', 155
+    dta 127,127,127, 1,2,3,4, '  ', 5, '_', 6, '4', 155
+    dta 127,127,'       ', 7,8,9,10,11, '  ', 12,13,13,14,155
+    dta 127,127,127,127, ' ', 15, 155
+    dta 155,155
+    dta 127,127, '    ', 16, 17, 155
+    dta 127,127, '    ', 18, 19, 155
+    dta 127,127, '    ', 20,21, 155
+    dta 127,127, '   ', 22,23,24,25
 
 message_len = * - message
 
 ; ----------------------------------------------------------------------------
 
     ini splash
+
+; ----------------------------------------------------------------------------
+
+    org $2000
+
+; BBC Micro font (Atari control characters are later copied from ROM)
+
+FONT:
+    ins 'data/font32-63.dat'
+    ins 'data/font64-95.dat'
+
+    org $2300
+
+    ins 'data/font96-127.dat'
 
 ; ----------------------------------------------------------------------------
 ; ============================================================================
