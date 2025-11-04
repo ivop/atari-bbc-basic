@@ -145,7 +145,7 @@ color  = $d8
     org $5000
 
 SPLASH_FONT:
-    ins 'data/splash.fnt'
+    ins 'data/splash.fnt' +0,+0,720
 
 ; Splash screen
 ; Code will be overwritten
