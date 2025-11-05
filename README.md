@@ -4,9 +4,9 @@ This is a port of BBC BASIC 3.10 for the Atari XL/XE computers.
 3.10 was the last version that ran on an NMOS 6502.
 Later versions required a CMOS 65C02, and won't run on an unmodified Atari.
 
-You can download the latest release [here](https://github.com/ivop/atari-bbc-basic/releases/tag/release-20251102).
+You can download the latest release [here](https://github.com/ivop/atari-bbc-basic/releases).
 
-![](images/report.png)
+![](images/splash.png) ![](images/report.png)
 
 The BBC BASIC dialect is described in the
 [BBC Microcomputer User Guide](http://regregex.bbcmicro.net/BPlusUserGuide-1.07.pdf).
@@ -201,4 +201,5 @@ make
 The BBC BASIC Atari Port is Copyright © 2025 by Ivo van Poorten  
 BBC BASIC is Copyright © 1982,1983 by Acorn and Sophie Wilson  
 Parts of the loader are based on Turbo Basic 1.5, Copyright © 1985 by Frank Ostrowski  
-Credits for the BBC BASIC II/III disassembly are at the [bbc-basic](https://github.com/ivop/bbc-basic) github repository.
+Credits for the BBC BASIC II/III disassembly are at the [bbc-basic](https://github.com/ivop/bbc-basic) github repository.  
+Splash screen by [MrFish](https://forums.atariage.com/profile/6369-mrfish/).
