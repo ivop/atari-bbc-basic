@@ -37,7 +37,7 @@ If you want different left or right margins, poke the appropriate Atari OS memor
 The Atari is not an Acorn computer, so in order to turn BBC BASIC into a useful BASIC for the Atari, some compromises had to be made.
 Instead of doing a poor BBC emulation, some of the commands work differenty than they would on the BBC in order to make them more useful on the Atari.
 
-* The BREAK key interrupts like ESCape on the BBC. Pressing the RESET key does a coldstart of BASIC, but you can recover your listing by typing ```OLD```.
+* The BREAK key interrupts like ESCape on the BBC. Pressing the RESET key does a coldstart of BASIC, but, unlike the BBC, does not clear your program.
 
 * ```SOUND``` works like Atari BASIC, i.e. ```SOUND voice, pitch, distortion, volume```. If your Atari is equiped with a second Pokey, you can add 8 to the voice parameter to play sounds on the right channel.
 
