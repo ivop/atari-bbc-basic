@@ -6,8 +6,6 @@ Later versions required a CMOS 65C02, and won't run on an unmodified Atari.
 
 You can download the latest release [here](https://github.com/ivop/atari-bbc-basic/releases).
 
-Note for Altirra users: you have to disable 'Stop on BRK instruction' as BBC BASIC relies heavily on using the BRK instruction as a software interrupt.
-
 ![](images/splash.png) ![](images/report.png)
 
 The BBC BASIC dialect is described in the
