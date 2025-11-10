@@ -73,10 +73,10 @@ ENTRY:
     sta zpSEED+2       ; "ARW" - Acorn Roger Wilson?
 
 RNDOK:
-    lda #<BREK
-    sta BRKV+0         ; Set up error handler
-    lda #>BREK
-    sta BRKV+1
+;    lda #<BREK
+;    sta BRKV+0         ; Set up error handler
+;    lda #>BREK
+;    sta BRKV+1
     cli
 warmstart_here = *+1
     jmp FORMAT         ; Enable IRQs, jump to immediate loop
@@ -854,7 +854,7 @@ BOR:
     and #$02
     beq BRSTOR              ; error not trapped
 
-    brk
+    jsr fake_brk
     dta 1, 'Out of range', 0
 
 BRSTOR:
@@ -900,7 +900,7 @@ INDINX:
     ; immediate argument > 255
 
 BYTE:
-    brk
+    jsr fake_brk
     dta 2, 'Byte', 0
 
 ; ----------------------------------------------------------------------------
@@ -952,7 +952,7 @@ ININX:
     ; the error message
 
 BADIND:
-    brk
+    jsr fake_brk
     dta 3, 'Index', 0
 
     ; check abs,x and abs,y
@@ -1738,7 +1738,7 @@ COMEAT:
     beq COMRTS          ; equal, ok
 
 COMERR:
-    brk
+    jsr fake_brk
     dta 5, 'Missing ,', 0
 
 ; ----------------------------------------------------------------------------
@@ -1776,7 +1776,7 @@ END:
 
 STOP:
     jsr DONE         ; Check end of statement
-    brk
+    jsr fake_brk
     dta 0, tknSTOP, 0
 
 ; ----------------------------------------------------------------------------
@@ -1866,7 +1866,8 @@ DC:                    ; Direct Command
     jsr SPACES         ; Skip spaces at (zpLINE)
     cmp #tknAUTO       ; first command token
     bcs DISPATCH       ; if command token, jump to execute command
-    bcc LETST          ; not command token, try variable assignment
+    jcc LETST          ; not command token, try variable assignment
+                       ; jcc because after fake_brk patch it is out of range
 
 LEAVE:                 ; trampoline for branches below
     jmp CLRSTK         ; Jump back to immediate mode
@@ -1907,7 +1908,7 @@ FNRET:
     jmp FDONE     ; Check for end of statement and return to pop from function
 
 FNERR:
-    brk
+    jsr fake_brk
     dta 7, 'No ', tknFN, 0
 
 ; ----------------------------------------------------------------------------
@@ -2072,7 +2073,7 @@ NOLET:
     jmp STDED         ; syntax error
 
 LETM:
-    brk
+    jsr fake_brk
     dta 6, 'Type mismatch', 0
 
 ; String Assignments
@@ -2203,7 +2204,7 @@ NSTRX:
 ; ----------------------------------------------------------------------------
 
 ALLOCR:
-    brk
+    jsr fake_brk
     dta 0, 'No room', 0
 
 ; ----------------------------------------------------------------------------
@@ -2613,7 +2614,7 @@ PRTSTN:
     rts
 
 NSTNG:
-    brk
+    jsr fake_brk
     dta 9, 'Missing ', '"', 0
 
 ; print quoted string
@@ -2950,13 +2951,5 @@ TOFF:
     beq TRACNN         ; Jump to set TRACE OFF
 
 ; ----------------------------------------------------------------------------
-
-.if .def TARGET_ATARI
-default_report:
-    dta 0, '(C)1983 Acorn', 13, 0
-.endif
-
-; ----------------------------------------------------------------------------
-
 
 ; vi:syntax=mads

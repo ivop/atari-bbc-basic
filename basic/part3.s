@@ -51,17 +51,17 @@ EQEXPR:
     beq EXPRDN      ; jump to evaluate expression, else fallthrough to error
 
 EQERRO:
-    brk
-    dta 4, 'Mistake'
+    jsr fake_brk
+    dta 4, 'Mistake', 0
 
 STDED:
-    brk                       ; also end of Mistake
-    dta 16, 'Syntax error'    ; Terminated by following BRK
+    jsr fake_brk
+    dta 16, 'Syntax error', 0
 
 ; Escape error
 ; ------------
 DOBRK:
-    brk               ; doubles as end of Syntax error on TARGET_BBC
+    jsr fake_brk
     dta 17, 'Escape', 0
 
 EQEAT:
@@ -416,7 +416,7 @@ PAST:
 ; ----------------------------------------------------------------------------
 
 ZDIVOR:
-    brk
+    jsr fake_brk
     dta $12, 'Division by zero'
     ; ending zero overlaps with VALM
 
@@ -958,7 +958,7 @@ GTOREQ:
 ; ----------------------------------------------------------------------------
 
 STROVR:
-    brk
+    jsr fake_brk
     dta $13, 'String too long', 0
 
 ; String addition / concatenation
@@ -3234,7 +3234,7 @@ FTIDY:
     jmp FTRNDZ      ; exit via round to zero (sets rounding byte to zero)
 
 FOVR:
-    brk
+    jsr fake_brk
     dta $14, 'Too big', 0
 
 FTRNDA:
@@ -3504,7 +3504,7 @@ FDIVM:
 ; Read -ve as negative
 
 FSQRTE:
-    brk
+    jsr fake_brk
     dta $15, '-ve root', 0
 
 ; =SQR numeric
@@ -3607,7 +3607,7 @@ FLOG:
     ; error when argument is negative or zero
 
 FLOGA:
-    brk
+    jsr fake_brk
     dta $16, 'Log range', 0         ; xxx: tknLOG ?
 
 FLOGB:
@@ -3988,7 +3988,7 @@ FRNGD:
 ; ----------------------------------------------------------------------------
 
 FRNGQQ:
-    brk
+    jsr fake_brk
     dta $17, 'Accuracy lost', 0
 
 ; ----------------------------------------------------------------------------
@@ -4099,7 +4099,7 @@ FEXPB:
     rts
 
 FEXPC:
-    brk
+    jsr fake_brk
     dta $18, 'Exp range', 0     ; xxx: tknEXP
 
 FEXPA:
@@ -4937,15 +4937,15 @@ GETPC:
 ; ----------------------------------------------------------------------------
 
 FACERR:
-    brk
-    dta $1A, 'No such variable'
-    ; brk overlap
+    jsr fake_brk
+    dta $1A, 'No such variable', 0
+
 BKTERR:
-    brk
-    dta $1B, 'Missing )'
+    jsr fake_brk
+    dta $1B, 'Missing )', 0
 
 HEXDED:
-    brk                 ; both end of BKTERR and start of HEXDED
+    jsr fake_brk
     dta $1C, 'Bad HEX', 0
 
 ; ----------------------------------------------------------------------------
@@ -5606,7 +5606,7 @@ FNMISS:
     pla             ; pop LSB of LINE
     sta zpLINE
 
-    brk
+    jsr fake_brk
     dta $1D, 'No such ', tknFN, '/', tknPROC, 0
 
 ; Look through program for FN/PROC
@@ -5708,7 +5708,7 @@ FNFDLK:
     jmp FNGO            ; join the PROC/FN code
 
 FNCALL:
-    brk
+    jsr fake_brk
     dta $1E, 'Bad call', 0
 
 ; ----------------------------------------------------------------------------
@@ -5981,7 +5981,7 @@ ARGMAT:
     pla
     sta zpLINE
 
-    brk                 ; and trigger error
+    jsr fake_brk                 ; and trigger error
     dta $1F, 'Arguments', 0
 
 FNARGZ:
@@ -6879,7 +6879,7 @@ LPSIMT:
 ; ----------------------------------------------------------------------------
 
 NEXER:
-    brk
+    jsr fake_brk
     dta $20, 'No ', tknFOR, 0
 
 ; NEXT [variable [,...]]
@@ -6927,10 +6927,9 @@ NOTIT:
     stx zpFORSTP
     bne STRIP           ; continue if stack is not empty
 
-    brk
+    jsr fake_brk
     dta $21
-    dta 'Can', 0x27, 't Match ', tknFOR
-    brk
+    dta 'Can', 0x27, 't Match ', tknFOR, 0
 
 NOCHK:
     lda FORINL-$f,X     ; retrieve the address of the variable
@@ -7071,15 +7070,15 @@ NXTFIN:
 ; ----------------------------------------------------------------------------
 
 FORCV:
-    brk
-    dta $22, tknFOR, ' variable'
-    ; brk overlap
+    jsr fake_brk
+    dta $22, tknFOR, ' variable', 0
+
 FORDP:
-    brk
-    dta $23, 'Too many ', tknFOR, 's'
-    ; brk overlap
+    jsr fake_brk
+    dta $23, 'Too many ', tknFOR, 's', 0
+
 FORTO:
-    brk
+    jsr fake_brk
     dta $24, 'No ', tknTO, 0
 
 ; FOR numvar = numeric TO numeric [STEP numeric]
@@ -7229,14 +7228,13 @@ ONGOSB:
     bcc GODONE      ; carry is clear, branch always to GOTO code
 
 GOSDP:
-    brk
-    dta $25, 'Too many ', tknGOSUB, 's'
-    ; brk overlap
+    jsr fake_brk
+    dta $25, 'Too many ', tknGOSUB, 's', 0
 
 ; ----------------------------------------------------------------------------
 
 RETNUN:
-    brk
+    jsr fake_brk
     dta $26, 'No ', tknGOSUB, 0
 
 ; RETURN
@@ -7318,7 +7316,7 @@ ONERRG:
     jmp REM             ; Skip past end of line, and return to main loop
 
 ONER:
-    brk
+    jsr fake_brk
     dta $27, tknON, ' syntax', 0
 
 ; ----------------------------------------------------------------------------
@@ -7436,7 +7434,7 @@ ONELSE:
     cmp #$0D
     bne ONELSE        ; loop until end of line
 
-    brk
+    jsr fake_brk
     dta $28, tknON, ' range', 0
 
 ONELS:
@@ -7465,7 +7463,7 @@ GOTGO:
     rts
 
 NOLINE:
-    brk
+    jsr fake_brk
     dta $29, 'No such line', 0
 
 ; ----------------------------------------------------------------------------
@@ -7879,11 +7877,11 @@ DATANS:
     bcs DATANX          ; keep searching for DATA
 
 DATAOT:
-    brk
-    dta $2A, 'Out of ', tknDATA
-    ; brk overlap
+    jsr fake_brk
+    dta $2A, 'Out of ', tknDATA, 0
+
 NODOS:
-    brk
+    jsr fake_brk
     dta $2B, 'No ', tknREPEAT, 0
 
 DATAOL:
@@ -7925,7 +7923,7 @@ REDO:
 ; ----------------------------------------------------------------------------
 
 DODP:
-    brk
+    jsr fake_brk
     dta $2C, 'Too many ', tknREPEAT, 's', 0
 
 ; ----------------------------------------------------------------------------
@@ -8141,7 +8139,7 @@ LENGTH:
     jsr ENDER           ; check for 'Bad program'
     jsr SETFSA          ; carry out a CLEAR operation
 
-    brk
+    jsr fake_brk
     dta 0, tknLINE, ' space', 0
 
 ; ----------------------------------------------------------------------------
@@ -8932,84 +8930,12 @@ CLOSE:
 
 ; ----------------------------------------------------------------------------
 
-; Copy LINE to AELINE, then get handle
-; ====================================
-; Returns file handle in Y and A
-
-AECHAN:
-    lda zpCURSOR
-    sta zpAECUR        ; copy cursor/offset
-    lda zpLINE
-    sta zpAELINE
-    lda zpLINE+1
-    sta zpAELINE+1
-
-; Check for '#', evaluate channel
-; ===============================
-; Returns file handle in Y and A
-
-CHANN:
-    jsr AESPAC        ; Skip spaces, and get next character
-    cmp #'#'          ; If not '#', jump to give error
-    bne CHANNE
-
-    jsr INTFAC        ; Evaluate as integer
-
-    ldy zpIACC
-    tya               ; Get low byte and return
-
-NULLRET:
-    rts
+.if .def TARGET_ATARI
+default_report:
+    dta 0, '(C)1983 Acorn', 13, 0
+.endif
 
 ; ----------------------------------------------------------------------------
-
-; Print inline text
-; =================
-
-VSTRNG:
-    pla
-    sta zpWORK
-    pla
-    sta zpWORK+1      ; Pop return address to WORK+0/1
-
-    ldy #$00
-    beq VSTRLP        ; Jump into loop
-
-VSTRLM:
-    jsr OSASCI        ; Print character
-
-VSTRLP:
-    jsr GETWK2        ; increment pointer and get next character
-    bpl VSTRLM        ; loop until bit 7 is set
-
-    jmp (zpWORK)      ; Jump back to program
-
-; ----------------------------------------------------------------------------
-
-; REPORT
-; ======
-
-REPORT:
-    jsr DONE           ; check end of statement
-    jsr NLINE          ; print newline, clear COUNT
-
-    ldy #$01
-
-REPLOP:
-    lda (FAULT),Y     ; get byte from FAULT block
-    beq REPORX        ; exit if $00 terminator
-
-    jsr TOKOUT        ; print character or (expanded) token
-
-    iny
-    bne REPLOP        ; loop for next
-
-REPORX:
-    jmp NXT           ; Jump to main execution loop
-
-CHANNE:
-    brk
-    dta $2D, 'Missing #', 0
 
   .if .def TARGET_BBC
     .if * > [romstart + $4000]

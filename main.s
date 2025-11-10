@@ -137,7 +137,6 @@ ptr2   = $d2
 save_a = $d4
 save_x = $d5
 save_y = $d6
-irq_a  = $d7
 color  = $d8
 
 ; ----------------------------------------------------------------------------
@@ -278,25 +277,6 @@ FONT:
 ; IRQ when ROM is off
 
 .proc irq_proc
-    sta irq_a           ; save A here because we need to do some PLAs
-
-    pla
-    pha
-    and #$10            ; check B bit
-    beq no_BRK
-
-    pla                 ; drop P
-    pla                 ; get return address
-    sec
-    sbc #1              ; and subtract 1
-    sta FAULT+0         ; set FAULT vector
-    pla
-    sbc #0
-    sta FAULT+1
-    jmp (BRKV)          ; jump to where BASIC has directed us
-
-no_BRK:
-    lda irq_a           ; restore A
     pha                 ; save on machine stack as the OS routine expects
 
     lda #>irq_end       ; return to irq_end by rti
@@ -308,6 +288,20 @@ no_BRK:
     inc PORTB           ; enable ROM
 
     jmp (VIMIRQ)
+.endp
+
+; ----------------------------------------------------------------------------
+
+.proc fake_brk
+    pla                 ; get return address
+    clc
+    adc #1              ; and add 1
+    sta FAULT+0         ; set FAULT vector
+    pla
+    adc #0
+    sta FAULT+1
+    jmp BREK
+;    jmp (BRKV)          ; jump to where BASIC has directed us
 .endp
 
 ; ----------------------------------------------------------------------------
@@ -457,12 +451,12 @@ channels_ungetc_flags:
 ; if A is supposed to be a handle on exit, A=0 on error
 
 .proc handle_out_of_range
-    brk
+    jsr fake_brk
     dta 0,'Handle out of range',0
 .endp
 
 .proc osfind_openup_unsupported
-    brk
+    jsr fake_brk
     dta 0,'OPENUP unsupported',0
 .endp
 
@@ -476,7 +470,7 @@ channels_ungetc_flags:
     cmp #$c0                        ; openup not possible with DOS 2.5
     beq osfind_openup_unsupported
 
-    brk
+    jsr fake_brk
     dta 0,'Unsuported OSFIND call',0
 .endp
 
@@ -673,7 +667,7 @@ too_high:
 ; OSARGS
 ;
 .proc __OSARGS
-    brk
+    jsr fake_brk
     dta 0,'PTR/EXT Unsupported',0
     ; Not possible with DOS 2.5
     ; 0x00 PTR#
@@ -697,7 +691,7 @@ too_high:
     cmp #$00
     beq osfile_save
 
-    brk
+    jsr fake_brk
     dta 0,'Unsupported OSFILE call',0
 .endp
 
@@ -750,7 +744,7 @@ too_high:
 .endp
 
 .proc cio_error
-    brk
+    jsr fake_brk
     dta 0,'I/O Error',0
 .endp
 
@@ -850,7 +844,7 @@ buf:
 ; OSWORD
 ;
 .proc osword_error
-    brk
+    jsr fake_brk
     dta 0,'Unsupported OSWORD call', 0
 .endp
 
@@ -1063,7 +1057,7 @@ done:
 .endp
 
 .proc unsupported_osbyte
-    brk
+    jsr fake_brk
     dta 0,'Unsupported OSBYTE call',0
 .endp
 
@@ -1388,7 +1382,7 @@ no_starsave:
 .endp
 
 .proc invalid_oscli
-    brk
+    jsr fake_brk
     dta 0,'Invalid OSCLI',0
 .endp
 
@@ -1615,7 +1609,7 @@ sdevice:
     cmp #133
     beq xio_fill
 
-    brk
+    jsr fake_brk
     dta 0,'PLOT action unsupported',0
 .endp
 
@@ -1666,6 +1660,14 @@ continue_drawto:
 
 plot_needed:
     dta 1
+
+; ----------------------------------------------------------------------------
+
+;;; PART OF BASIC part2 here because we ran out of space with fake_brk patch
+
+    icl 'basic/part2b.s'
+
+    .error * >= $2fb9
 
 ; ----------------------------------------------------------------------------
 

@@ -84,11 +84,11 @@ NUMBA:
     bcc NUMBA           ; always loop back to the next line
 
 NUMBFL:
-    brk
+    jsr fake_brk
     dta 0, tknRENUMBER, ' space'      ; Terminated by following BRK
 
 GETYUK:
-    brk
+    jsr fake_brk
     dta 0, 'Silly', 0
 
 ; Look for renumber references
@@ -333,7 +333,7 @@ DIMSP:
     jmp DIMNXT      ; join main DIM code
 
 NOTGO:
-    brk
+    jsr fake_brk
     dta 10, 'Bad ', tknDIM, 0
 
 ; DIM numvar [numeric] [(arraydef)]
@@ -516,7 +516,7 @@ DIMJ:
     jmp DIM         ; go back and get the next array
 
 DIMRAM:
-    brk
+    jsr fake_brk
     dta 11, tknDIM, ' space', 0
 
 ; ----------------------------------------------------------------------------
@@ -690,15 +690,15 @@ ENDPR:
     jmp DONE        ; Check end of statement and return to pop from subroutine
 
 NOPROC:
-    brk
-    dta 13, 'No ', tknPROC       ; Terminated by following BRK
+    jsr fake_brk
+    dta 13, 'No ', tknPROC, 0
 
 NLOCAL:
-    brk
-    dta 12, 'Not ', tknLOCAL      ; Terminated by following BRK
+    jsr fake_brk
+    dta 12, 'Not ', tknLOCAL, 0
 
 MODESX:
-    brk
+    jsr fake_brk
     dta $19, 'Bad ', tknMODE, 0
 
 ; ----------------------------------------------------------------------------
@@ -1287,7 +1287,7 @@ DOLL:
     rts
 
 DOLLER:
-    brk
+    jsr fake_brk
     dta 8, '$ range', 0
 
 ; Copy LINE pointer to AE pointer, and skip spaces before searching for
@@ -1552,7 +1552,7 @@ LVSTRA:
     rts
 
 UNARRY:
-    brk
+    jsr fake_brk
     dta 14, 'Array', 0
 
     ; Array
@@ -1735,7 +1735,7 @@ TSTRNG:
     rts
 
 SUBSCP:
-    brk
+    jsr fake_brk
     dta 15, 'Subscript', 0
 
 ; ----------------------------------------------------------------------------

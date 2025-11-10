@@ -223,6 +223,7 @@ tknOSCLI    = $FF
         org romstart
         icl 'part1.s'
         icl 'part2.s'
+        icl 'part2b.s'
         icl 'part3.s'
     .endif
 
