@@ -205,7 +205,7 @@ make
 ## Credits
 
 The BBC BASIC Atari Port is Copyright © 2025 by Ivo van Poorten  
-BBC BASIC is Copyright © 1982,1983 by Acorn and Sophie Wilson  
-Parts of the loader are based on Turbo Basic 1.5, Copyright © 1985 by Frank Ostrowski  
-Credits for the BBC BASIC II/III disassembly are at the [bbc-basic](https://github.com/ivop/bbc-basic) github repository.  
-Splash screen by [MrFish](https://forums.atariage.com/profile/6369-mrfish/).
+BBC BASIC is Copyright © 1982,1983 by [Acorn](https://en.wikipedia.org/wiki/Acorn_Computers) and [Sophie Wilson](https://en.wikipedia.org/wiki/Sophie_Wilson)  
+Parts of the loader are based on Turbo Basic 1.5, Copyright © 1985 by [Frank Ostrowski](https://en.wikipedia.org/wiki/Frank_Ostrowski)  
+Credits for the BBC BASIC II/III disassembly are at the [bbc-basic](https://github.com/ivop/bbc-basic) github repository  
+Splash screen by [Paul Fisher](https://forums.atariage.com/profile/6369-mrfish/)
