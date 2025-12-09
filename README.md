@@ -143,7 +143,7 @@ So ```ESC SHIFT-CLEAR``` is '}', and ```ESC BACKSPACE``` is '~'.
 
 You can use inverse characters inside strings, just like standard Atari BASIC. You cannot use them anywhere else, like in REM statements.
 Inverse characters have an ASCII value larger than 127. BBC BASIC will mistake them for _tokens_ and expand them when listed. It's mostly harmless though,
-except for inverse CTRL-M (value &8D), which signals a new line number (tknCONST). This will mess up your listing. This is a known BBC BUG,
+except for inverse CTRL-M (value &8D), which signals a new line number (tknCONST). This will mess up your listing. This is a known BBC Micro BUG,
 where this could be triggered by including Teletext &8D inside a REM statement.
 
 ## Memory Map
