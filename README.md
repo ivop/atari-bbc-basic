@@ -15,6 +15,24 @@ One of the most attractive features is the inbuilt assembler.
 It's described in the aformentioned user guide. More information and tips & tricks can be found in
 [Creative Assembler](https://acorn.huininga.nl/pub/docs/manuals/Acornsoft/Creative%20Assembler%20-%20How%20To%20Write%20Arcade%20Games.pdf).
 
+## Table of Contents
+
+* [System Requirements](#system-requirements)
+* [Screen Editor](#screen-editor)
+* [Differences](#differences)
+  * [Graphics Modes](#graphics-modes)
+* [OSCLI Commands](#oscli-commands)
+* [MOS Vectors](#mos-vectors)
+* [Atari Control Characters](#atari-control-characters)
+* [Typing Special Characters](#typing-special-characters)
+* [Inverse Characters](#inverse-characters)
+* [Memory Map](#memory-map)
+* [Speed](#speed)
+* [The Font](#the-font)
+* [Example Programs](#example-programs)
+* [Build From Source](#build-from-source)
+* [Credits](#credits)
+
 ## System Requirements
 
 BBC BASIC 3.10 for the Atari XL/XE runs on any XL/XE compatible machine with at least 64kB of RAM, and a floppy drive.
